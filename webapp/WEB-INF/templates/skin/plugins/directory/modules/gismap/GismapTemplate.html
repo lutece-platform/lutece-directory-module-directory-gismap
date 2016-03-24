@@ -1,0 +1,61 @@
+<p>${entry.title} :</p>
+<input type="hidden" id="${entry.idEntry}_map_provider" name="${entry.idEntry}_map_provider" value="${entry.mapProvider.key}"/>
+<div style="float:left; width:45%">
+</div>
+<div style="clear:both;"></div>
+<div id="${entry.idEntry}_map_view" class="map"></div>
+<#-- javascript cartographie : -->
+<link rel="stylesheet" type="text/css" href="css/plugins/gis/gis.css" media="screen, projection, print"/>
+<link rel="stylesheet" type="text/css" href="js/plugins/gis/openlayers/Legend.css" />
+<link rel="stylesheet" type="text/css" href="js/plugins/gis/openlayers/GeolocalizationPanel.css" />
+<link rel="stylesheet" type="text/css" href="js/plugins/gis/openlayers/LayerSearchPanel.css" />
+<script src="js/plugins/gis/LABjs-1.0.2rc1/LAB.js" type="text/javascript"></script>
+<script src="js/proj4js-combined.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+
+$(document).ready(function() {
+	var idMapDiv = "${entry.idEntry}_map_view";
+	
+	var optionalParameters = {};
+
+	$( "#" +idMapDiv ).data('optionalParameters', optionalParameters);	
+	
+	var baseUrl = $('base').attr('href');
+			$LAB
+			.script(baseUrl +"js/plugins/gis/openlayers/OpenLayers.js").wait()
+			.script(baseUrl +"js/plugins/gis/openlayers/CustomLayerSwitcher.js").wait()
+			.script(baseUrl +"js/plugins/gis/openlayers/Legend.js").wait()
+			.script(baseUrl +"js/plugins/gis/openlayers/LayerSearchPanel.js").wait()
+			.script(baseUrl +"js/plugins/gis/openlayers/StaticGeolocalizationControl.js").wait()
+			.script(baseUrl +"js/plugins/gis/gis.js").wait()
+			.wait(function(){
+				$.get(baseUrl +'/jsp/site/plugins/gis/DoDisplayMap.jsp?map_name='+idMapDiv+'&gis_code='+"DIRECTORY", 
+						function(data){
+							$("#"+idMapDiv).html(data);
+							$("#"+idMapDiv).show();
+						});
+			});
+	
+});
+
+$('body').bind('GisMap.displayComplete', function () {
+	
+	var poi = {
+			x: $("#${entry.idEntry}_x").val().replace(/\n/g, "" ),
+			y: $("#${entry.idEntry}_y").val().replace(/\n/g, "" ),
+			srid: "EPSG:4326"
+	};
+	
+	// Wait for projection to be ready to transform poi
+	setTimeout(function() {
+		$("body").trigger(
+			jQuery.Event("GisLocalization.send.POI", {
+					poi: poi
+				})
+		);
+	}, 1000);
+});
+
+</script>
+<noscript>#i18n{module.directory.gis.javascript.disabled}</noscript>
