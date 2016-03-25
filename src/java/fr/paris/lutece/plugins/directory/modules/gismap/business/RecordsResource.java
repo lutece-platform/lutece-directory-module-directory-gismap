@@ -7,10 +7,14 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import fr.paris.lutece.plugins.directory.business.Entry;
+import fr.paris.lutece.plugins.directory.business.EntryHome;
 import fr.paris.lutece.plugins.directory.business.Field;
 import fr.paris.lutece.plugins.directory.business.IEntry;
+import fr.paris.lutece.plugins.directory.business.Record;
 import fr.paris.lutece.plugins.directory.business.RecordField;
 import fr.paris.lutece.plugins.directory.business.RecordFieldHome;
+import fr.paris.lutece.plugins.directory.business.RecordHome;
 import fr.paris.lutece.plugins.directory.utils.DirectoryUtils;
 import fr.paris.lutece.portal.service.util.AppPropertiesService;
 import net.sf.json.JSONArray;
@@ -68,10 +72,11 @@ public class RecordsResource
    
    public JSONObject getProperties(RecordField recordFieldParam, String strListId, int nKey)
    {
-	   //String strPopupShowLinkProperty = AppPropertiesService.getProperty( GISMAP_VIEW + nKey + PARAMETER  + POPUPSHOWLINK );
+	   String strPopupShowLinkProperty = AppPropertiesService.getProperty( GISMAP_VIEW + nKey + PARAMETER  + POPUPSHOWLINK );
 	   String strPopup1Property = AppPropertiesService.getProperty( GISMAP_VIEW + nKey + PARAMETER  + POPUP1 );
 	   String[] strrPopup1PropertyArray = strPopup1Property.split(",");
 	   String[] strProperties = null;
+	   
 	   if(strrPopup1PropertyArray.length>1)
 	   {
 		   strProperties = strrPopup1PropertyArray[1].split(";");
@@ -95,6 +100,12 @@ public class RecordsResource
 				   if(inProperties(strProperties,entry.getTitle()))
 					   properties.accumulate(entry.getTitle(), recordField.getValue());
 			   }
+		   }
+		   Record record = RecordHome.findByPrimaryKey(recordFieldParam.getRecord().getIdRecord(), DirectoryUtils.getPlugin());
+		   if(record.getDirectory()!=null)
+		   {
+			   if(strPopupShowLinkProperty.compareTo("true")==0)
+				   properties.accumulate("link", getLink(record));
 		   }
 	   }
 	   
@@ -138,5 +149,12 @@ public class RecordsResource
 			}
 		}
 	   return strViewNumberValue==null ? 1 : Integer.parseInt(strViewNumberValue);
+   }
+   
+   public String getLink(Record record)
+   {
+	   int idDirectoryRecord = record.getIdRecord();
+	   int idDirectory = record.getDirectory().getIdDirectory();
+	   return "jsp/admin/plugins/directory/DoVisualisationRecord.jsp?id_directory_record="+idDirectoryRecord+"&id_directory="+idDirectory;
    }
 }
