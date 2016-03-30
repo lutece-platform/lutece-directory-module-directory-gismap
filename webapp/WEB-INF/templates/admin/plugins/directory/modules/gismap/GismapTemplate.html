@@ -99,6 +99,42 @@ function getAdditionalAdd (address)
 	}
 	return additionalAddress;
 };
+
+function geocodage(){
+	var valX = $('#${entry.idEntry}_geomCentroidXGeocodage').val();
+	var valY = $('#${entry.idEntry}_geomCentroidXGeocodage').val();
+	$.ajax({
+            //url: "http://xdir-infspub-pr.ressources.paris.mdp:8080/StoreBoss/rest/adrlib/xy/%28653745,6860904%29",
+            url: "http://xdir-infspub-pr.ressources.paris.mdp:8080/StoreBoss/rest/adrlib/",
+            //url : "${add_parameter.url}",
+            dataType: "jsonp",
+               jsonp: "callback",
+                 jsonpCallback: 'jsonp_callback',
+             success: function( response ) {
+        alert("ok");
+    },
+           error: function (xhr, ajaxOptions, thrownError) {
+        alert(xhr.status);
+        alert(thrownError);
+      }
+        });
+};
+
+function localJsonpCallback(json) {
+
+   console.log(json);
+    }
+function fun() 
+{
+   var data="hello";
+   $.get("${add_parameter.url}", function(response) {
+   	data = response;
+   }).error(function(){
+   	alert("Sorry could not proceed");
+   });
+
+   return data;
+};
 </script>
 
 <noscript>#i18n{module.genericattributes.gis.javascript.disabled}</noscript>
