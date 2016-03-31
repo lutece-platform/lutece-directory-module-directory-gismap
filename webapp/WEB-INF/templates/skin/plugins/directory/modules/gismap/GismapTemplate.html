@@ -72,49 +72,29 @@ function getAdditionalAdd (address)
 	    case "75014": additionalAddress = "14e arrondissement"; break;
 	    case "75015": additionalAddress = "15e arrondissement"; break;
 	    case "75016": additionalAddress = "16e arrondissement"; break;
+	    case "75116": additionalAddress = "16e arrondissement"; break;
 	    case "75017": additionalAddress = "17e arrondissement"; break;
 	    case "75018": additionalAddress = "18e arrondissement"; break;
 	    case "75019": additionalAddress = "19e arrondissement"; break;
 	    case "75020": additionalAddress = "20e arrondissement"; break;
-	    default: additionalAddress = addCompTab[2];
+	    default: if(addCompTab[2] == "" ) additionalAddress = addCompTab[1]; else additionalAddress = addCompTab[2];
 	}
 	return additionalAddress;
 };
 
 function geocodage(){
 	var valX = $('#${entry.idEntry}_geomCentroidXGeocodage').val();
-	var valY = $('#${entry.idEntry}_geomCentroidXGeocodage').val();
+	var valY = $('#${entry.idEntry}_geomCentroidYGeocodage').val();
 	$.ajax({
-            //url: "http://xdir-infspub-pr.ressources.paris.mdp:8080/StoreBoss/rest/adrlib/xy/%28653745,6860904%29",
-            url: "http://xdir-infspub-pr.ressources.paris.mdp:8080/StoreBoss/rest/adrlib/",
-            //url : "${add_parameter.url}",
-            dataType: "jsonp",
-               jsonp: "callback",
-                 jsonpCallback: 'jsonp_callback',
-             success: function( response ) {
-        alert("ok");
-    },
-           error: function (xhr, ajaxOptions, thrownError) {
-        alert(xhr.status);
-        alert(thrownError);
-      }
-        });
-};
-
-function localJsonpCallback(json) {
-
-   console.log(json);
-    }
-function fun() 
-{
-   var data="hello";
-   $.get("${add_parameter.url}", function(response) {
-   	data = response;
-   }).error(function(){
-   	alert("Sorry could not proceed");
-   });
-
-   return data;
+		url: "http://localhost:8080/gismap/rest/gismap/xy/" + valX + "," + valY,
+        dataType: "jsonp",
+	    jsonpCallback: 'callback',
+        success: function( data ) {
+			var address = data.Adresse_tot+", "+data.Codepostal+" ";
+        	$("#${entry.idEntry}_address").val(address);
+			$("#${entry.idEntry}_additional_address").val(getAdditionalAdd(address));
+    	}
+    });
 };
 </script>
 
