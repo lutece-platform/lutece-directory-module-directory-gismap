@@ -50,7 +50,7 @@ $("#${entry.idEntry}_address").autocomplete({
 		$('#${entry.idEntry}_x').val(ui.item.x);
 		$('#${entry.idEntry}_y').val(ui.item.y);
 		$('#${entry.idEntry}_additional_address').val(getAdditionalAdd(ui.item.label));
-		zoom.zoomSuggestPoi(ui.item.x, ui.item.y);
+		GisMapDisplay${entry.idEntry}.getZoom().zoomSuggestPoi(ui.item.x, ui.item.y);
 		
     }
 }).focus();
