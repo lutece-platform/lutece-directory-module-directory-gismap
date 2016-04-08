@@ -112,6 +112,11 @@ function geocodage(){
 			var address = data.Adresse_tot+", "+data.Codepostal+" ";
         	$("#${entry.idEntry}_address").val(address);
 			$("#${entry.idEntry}_additional_address").val(getAdditionalAdd(address));
+    	}, 
+    	error: function(){
+    		var address = "227 rue de Bercy, 75012 PARIS";
+        	$("#${entry.idEntry}_address").val(address);
+			$("#${entry.idEntry}_additional_address").val(getAdditionalAdd(address));
     	}
     });
 };
