@@ -139,7 +139,7 @@ public class RecordsResource
 				if(recordField!=null)
 				{
 					Field field = recordField.getField();
-					if(field!=null && field.getTitle().compareTo("viewNumber")==0)
+					if(field!=null && field.getTitle().compareTo("viewNumberGes")==0)
 					{
 						strViewNumberValue = field.getValue();
 						break;

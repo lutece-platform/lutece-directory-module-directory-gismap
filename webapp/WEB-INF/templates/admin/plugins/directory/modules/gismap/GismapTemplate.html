@@ -22,7 +22,7 @@
 
 <input type="hidden" id="${entry.idEntry}_map_provider" name="${entry.idEntry}_map_provider" value="${entry.mapProvider.key}"/>
 
-<#include entry.mapProvider.getParameter(viewNumberValue?number).mapTemplateFile />
+<#include entry.mapProvider.getParameter(viewNumberAttValue?number).mapTemplateFile />
 
 <script src="js/autocomplete/external/jquery/jquery.js"></script>
 <script src="js/autocomplete/jquery-ui.js"></script>
