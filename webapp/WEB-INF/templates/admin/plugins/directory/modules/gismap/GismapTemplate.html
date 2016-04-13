@@ -18,8 +18,7 @@
 		</#if>
 	</#list>
 </#if>
-<#assign fieldParam = {"TypeEdit" : "${editModeValue}", "GeomGeoJson" : "${entry.idEntry}_geometry", "GeomCentroidXStockage" : "${entry.idEntry}_x", "GeomCentroidYStockage" : "${entry.idEntry}_y", "GeomCentroidXGeocodage" : "${entry.idEntry}_geomCentroidXGeocodage", "GeomCentroidYGeocodage" : "${entry.idEntry}_geomCentroidYGeocodage", "GeomState" : "${entry.idEntry}_geomState", "UrlGeoJSON1" : ""} >
-
+<#assign fieldParam = {"TypeEdit" : "${editModeValue}", "GeomGeoJson" : "${entry.idEntry}_geometry", "GeomCentroidXStockage" : "${entry.idEntry}_x", "GeomCentroidYStockage" : "${entry.idEntry}_y", "GeomCentroidXGeocodage" : "${entry.idEntry}_geomCentroidXGeocodage", "GeomCentroidYGeocodage" : "${entry.idEntry}_geomCentroidYGeocodage", "GeomState" : "${entry.idEntry}_geomState", "ExtentCurrent" : "${entry.idEntry}_extentCurrent", "VisibleLayer" : "${entry.idEntry}_visibleLayer", "UrlGeoJSON1" : ""} >
 <input type="hidden" id="${entry.idEntry}_map_provider" name="${entry.idEntry}_map_provider" value="${entry.mapProvider.key}"/>
 
 <#include entry.mapProvider.getParameter(viewNumberAttValue?number).mapTemplateFile />
@@ -102,10 +101,11 @@ function getAdditionalAdd (address)
 };
 
 function geocodage(){
+	var webappURL = $('#webapp_url').val();
 	var valX = $('#${entry.idEntry}_geomCentroidXGeocodage').val();
 	var valY = $('#${entry.idEntry}_geomCentroidYGeocodage').val();
 	$.ajax({
-		url: "http://localhost:8080/gismap/rest/gismap/xy/" + valX + "," + valY,
+		url: webappURL + "rest/gismap/xy/" + valX + "," + valY,
         dataType: "jsonp",
 	    jsonpCallback: 'callback',
         success: function( data ) {
@@ -120,7 +120,6 @@ function geocodage(){
     	}
     });
 };
-
 </script>
 
 <noscript>#i18n{module.genericattributes.gis.javascript.disabled}</noscript>
