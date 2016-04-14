@@ -7,8 +7,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import fr.paris.lutece.plugins.directory.business.Entry;
-import fr.paris.lutece.plugins.directory.business.EntryHome;
 import fr.paris.lutece.plugins.directory.business.Field;
 import fr.paris.lutece.plugins.directory.business.IEntry;
 import fr.paris.lutece.plugins.directory.business.Record;
@@ -28,6 +26,7 @@ public class RecordsResource
 	public static final String PARAMETER = ".parameter.";
 	public static final String POPUPSHOWLINK = "Popup_ShowLink";
     public static final String POPUP1 = "Popup1";
+    public static final String RMMSHOWCENTROID = "RenderMapManagement.ShowCentoid";
     
 	@GET
 	@Path("listRecordField/{listId}")
