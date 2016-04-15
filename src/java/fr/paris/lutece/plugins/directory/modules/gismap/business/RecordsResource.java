@@ -26,14 +26,14 @@ public class RecordsResource
 	public static final String PARAMETER = ".parameter.";
 	public static final String POPUPSHOWLINK = "Popup_ShowLink";
     public static final String POPUP1 = "Popup1";
-    public static final String RMMSHOWCENTROID = "RenderMapManagement.ShowCentoid";
+    public static final String RMMSHOWCENTROID = "RenderMapManagement.ShowCentroid";
     
 	@GET
 	@Path("listRecordField/{listId}")
 	@Produces( MediaType.APPLICATION_JSON )
 	public String getListRecordField(@PathParam("listId") String strListId) 
 	{
-		String strRMMSHOWCENTROIDProperty = AppPropertiesService.getProperty( GISMAP_VIEW + getViewNumber(strListId) + PARAMETER  + POPUP1 );
+		String strRMMSHOWCENTROIDProperty = AppPropertiesService.getProperty( GISMAP_VIEW + getViewNumber(strListId) + PARAMETER  + RMMSHOWCENTROID );
 		String[] strListIdTab = strListId !=null ? strListId.split(",") : null;
 		JSONObject collection = new JSONObject();
 		collection.accumulate("type", "FeatureCollection");
@@ -58,7 +58,7 @@ public class RecordsResource
 						jsonElement.accumulate("id", recordField.getRecord().getIdRecord());
 						jsonElement.accumulate("properties", getProperties(recordField, strListId, getViewNumber(strListId)));
 						
-						if(strRMMSHOWCENTROIDProperty!=null && strRMMSHOWCENTROIDProperty.compareTo("true")==0)
+						if(strRMMSHOWCENTROIDProperty != null && strRMMSHOWCENTROIDProperty.compareTo("true")==0)
 						{
 							jsonElement.accumulate("geometry", getCoordinatesXY(strListId));
 						}
