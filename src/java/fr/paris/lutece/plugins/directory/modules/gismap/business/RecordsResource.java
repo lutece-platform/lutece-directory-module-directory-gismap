@@ -33,6 +33,7 @@ public class RecordsResource
 	@Produces( MediaType.APPLICATION_JSON )
 	public String getListRecordField(@PathParam("listId") String strListId) 
 	{
+		String strRMMSHOWCENTROIDProperty = AppPropertiesService.getProperty( GISMAP_VIEW + getViewNumber(strListId) + PARAMETER  + POPUP1 );
 		String[] strListIdTab = strListId !=null ? strListId.split(",") : null;
 		JSONObject collection = new JSONObject();
 		collection.accumulate("type", "FeatureCollection");
@@ -56,7 +57,15 @@ public class RecordsResource
 						jsonElement.accumulate("type", "Feature");
 						jsonElement.accumulate("id", recordField.getRecord().getIdRecord());
 						jsonElement.accumulate("properties", getProperties(recordField, strListId, getViewNumber(strListId)));
-						jsonElement.accumulate("geometry", jsonElementValue.getJSONObject("elementvalue").getJSONObject("geometry"));
+						
+						if(strRMMSHOWCENTROIDProperty!=null && strRMMSHOWCENTROIDProperty.compareTo("true")==0)
+						{
+							jsonElement.accumulate("geometry", getCoordinatesXY(strListId));
+						}
+						else
+						{
+							jsonElement.accumulate("geometry", jsonElementValue.getJSONObject("elementvalue").getJSONObject("geometry"));
+						}
 						
 						array.add(jsonElement);
 					 }
@@ -155,5 +164,55 @@ public class RecordsResource
 	   int idDirectoryRecord = record.getIdRecord();
 	   int idDirectory = record.getDirectory().getIdDirectory();
 	   return "jsp/admin/plugins/directory/DoVisualisationRecord.jsp?id_directory_record="+idDirectoryRecord+"&id_directory="+idDirectory;
+   }
+   
+   public String getCoordinatesXY(String strListId)
+   {
+	 //"geometry":{"type":"Point","coordinates":[2.3009992,48.836666]}}
+	   
+	   String[] strListIdTab = strListId !=null ? strListId.split(",") : null;
+	   
+	   String strX="";
+	   String strY="";
+	   if(strListIdTab!=null)
+	   {
+		   for(int i=0;i<strListIdTab.length;i++)
+		   {
+			   int nIdRecordFiels = Integer.parseInt(strListIdTab[i]);
+			   RecordField recordField = RecordFieldHome.findByPrimaryKey(nIdRecordFiels, DirectoryUtils.getPlugin());
+			   if(recordField!=null)
+			   {
+				   Field field = recordField.getField();
+				   if(field!=null && field.getTitle().compareTo("X")==0)
+				   {
+					   strX = recordField.getValue();
+					   break;
+				   }
+			   }
+		   }
+		   for(int i=0;i<strListIdTab.length;i++)
+		   {
+			   int nIdRecordFiels = Integer.parseInt(strListIdTab[i]);
+			   RecordField recordField = RecordFieldHome.findByPrimaryKey(nIdRecordFiels, DirectoryUtils.getPlugin());
+			   if(recordField!=null)
+			   {
+				   Field field = recordField.getField();
+				   if(field!=null && field.getTitle().compareTo("Y")==0)
+				   {
+					   strY = recordField.getValue();
+					   break;
+				   }
+			   }
+		   }
+	   }
+	   if(!strX.isEmpty() && !strY.isEmpty())
+	   {
+		   JSONObject jsonElement = new JSONObject();
+		   jsonElement.accumulate("type", "Point");
+		   jsonElement.accumulate("coordinates", "["+strX+","+strY+"]");
+		   return jsonElement.toString();
+	   }
+	   
+	   return null;
    }
 }
