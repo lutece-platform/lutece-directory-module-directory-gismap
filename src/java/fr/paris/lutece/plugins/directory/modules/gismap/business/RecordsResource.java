@@ -60,7 +60,7 @@ public class RecordsResource
 						
 						if(strRMMSHOWCENTROIDProperty != null && strRMMSHOWCENTROIDProperty.compareTo("true")==0)
 						{
-							jsonElement.accumulate("geometry", getCoordinatesXY(strListId));
+							jsonElement.accumulate("geometry", getCoordinatesXY(recordField, strListId));
 						}
 						else
 						{
@@ -166,7 +166,7 @@ public class RecordsResource
 	   return "jsp/admin/plugins/directory/DoVisualisationRecord.jsp?id_directory_record="+idDirectoryRecord+"&id_directory="+idDirectory;
    }
    
-   public String getCoordinatesXY(String strListId)
+   public String getCoordinatesXY(RecordField recordFieldParam, String strListId)
    {
 	 //"geometry":{"type":"Point","coordinates":[2.3009992,48.836666]}}
 	   
@@ -180,7 +180,7 @@ public class RecordsResource
 		   {
 			   int nIdRecordFiels = Integer.parseInt(strListIdTab[i]);
 			   RecordField recordField = RecordFieldHome.findByPrimaryKey(nIdRecordFiels, DirectoryUtils.getPlugin());
-			   if(recordField!=null)
+			   if(recordField!=null && recordField.getRecord().getIdRecord()==recordFieldParam.getRecord().getIdRecord())
 			   {
 				   Field field = recordField.getField();
 				   if(field!=null && field.getTitle().compareTo("X")==0)
@@ -194,7 +194,7 @@ public class RecordsResource
 		   {
 			   int nIdRecordFiels = Integer.parseInt(strListIdTab[i]);
 			   RecordField recordField = RecordFieldHome.findByPrimaryKey(nIdRecordFiels, DirectoryUtils.getPlugin());
-			   if(recordField!=null)
+			   if(recordField!=null && recordField.getRecord().getIdRecord()==recordFieldParam.getRecord().getIdRecord())
 			   {
 				   Field field = recordField.getField();
 				   if(field!=null && field.getTitle().compareTo("Y")==0)
