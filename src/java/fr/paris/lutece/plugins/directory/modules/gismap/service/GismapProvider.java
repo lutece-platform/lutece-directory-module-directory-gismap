@@ -144,17 +144,4 @@ public class GismapProvider implements IMapProvider
         View view = ViewHome.findByPrimaryKey( nKey );
 		return view;
 	}
-	
-	public HttpSession getHttpSession(HttpServletRequest request)
-	{
-		String strGismapEntry = request.getParameter(  "gismap_entry" ); 
-        String strExtentCurrent = request.getParameter(  strGismapEntry + "_extent_current" ); 
-        String strVisibleLayer = request.getParameter(  strGismapEntry + "_visible_layer" ); 
-        HttpSession session = request.getSession( false );
-        session.setAttribute("ttt", "ttt");
-        session.setAttribute(strGismapEntry + "_extent_current", strExtentCurrent);
-        session.setAttribute(strGismapEntry + "_visible_layer", strVisibleLayer);
-        
-        return session;
-	}
 }
