@@ -1,6 +1,8 @@
 package fr.paris.lutece.plugins.directory.modules.gismap.business;
 
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -215,4 +217,5 @@ public class RecordsResource
 	   
 	   return null;
    }
+   
 }

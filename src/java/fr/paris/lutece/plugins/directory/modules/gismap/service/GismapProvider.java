@@ -33,6 +33,9 @@
  */
 package fr.paris.lutece.plugins.directory.modules.gismap.service;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
 import fr.paris.lutece.plugins.directory.business.IMapProvider;
 import fr.paris.lutece.plugins.gismap.business.View;
 import fr.paris.lutece.plugins.gismap.business.ViewHome;
@@ -134,8 +137,24 @@ public class GismapProvider implements IMapProvider
 		return CONSTANT_MAP_LIST_SUPPORTED;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public Object getParameter( int nKey) {
         View view = ViewHome.findByPrimaryKey( nKey );
 		return view;
+	}
+	
+	public HttpSession getHttpSession(HttpServletRequest request)
+	{
+		String strGismapEntry = request.getParameter(  "gismap_entry" ); 
+        String strExtentCurrent = request.getParameter(  strGismapEntry + "_extent_current" ); 
+        String strVisibleLayer = request.getParameter(  strGismapEntry + "_visible_layer" ); 
+        HttpSession session = request.getSession( false );
+        session.setAttribute("ttt", "ttt");
+        session.setAttribute(strGismapEntry + "_extent_current", strExtentCurrent);
+        session.setAttribute(strGismapEntry + "_visible_layer", strVisibleLayer);
+        
+        return session;
 	}
 }
