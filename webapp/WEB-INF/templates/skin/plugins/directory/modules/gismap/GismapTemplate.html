@@ -1,5 +1,5 @@
 
-<#assign fieldParam = {"TypeEdit" : "${editModeValue}", "GeomGeoJson" : "${entry.idEntry}_geometry", "GeomCentroidXStockage" : "${entry.idEntry}_x", "GeomCentroidYStockage" : "${entry.idEntry}_y", "GeomCentroidXGeocodage" : "${entry.idEntry}_geomCentroidXGeocodage", "GeomCentroidYGeocodage" : "${entry.idEntry}_geomCentroidYGeocodage", "GeomState" : "${entry.idEntry}_geomState", "ExtentCurrent" : "${entry.idEntry}_extentCurrent", "VisibleLayer" : "${entry.idEntry}_visibleLayer", "UrlGeoJSON1" : "", "Proxy" : "rest/gismapp/gisproxy?url="} >
+<#assign fieldParam = {"TypeEdit" : "${editModeValue}", "GeomGeoJson" : "${entry.idEntry}_geometry", "GeomCentroidXStockage" : "${entry.idEntry}_x", "GeomCentroidYStockage" : "${entry.idEntry}_y", "GeomCentroidXGeocodage" : "${entry.idEntry}_geomCentroidXGeocodage", "GeomCentroidYGeocodage" : "${entry.idEntry}_geomCentroidYGeocodage", "GeomState" : "${entry.idEntry}_geomState", "ExtentCurrent" : "${entry.idEntry}_extent_current", "VisibleLayer" : "${entry.idEntry}_visible_layer", "UrlGeoJSON1" : "", "Proxy" : "rest/gismapp/gisproxy?url="} >
 
 <input type="hidden" id="${entry.idEntry}_map_provider" name="${entry.idEntry}_map_provider" value="${entry.mapProvider.key}"/>
 
@@ -83,7 +83,7 @@ function getAdditionalAdd (address)
 	return additionalAddress;
 };
 
-function geocodage(){
+function geocodage${entry.idEntry}(){
 	var valX = $('#${entry.idEntry}_geomCentroidXGeocodage').val();
 	var valY = $('#${entry.idEntry}_geomCentroidYGeocodage').val();
 	$.ajax({
