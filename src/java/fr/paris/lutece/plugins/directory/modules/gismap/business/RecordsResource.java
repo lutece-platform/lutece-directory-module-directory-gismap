@@ -89,7 +89,7 @@ public class RecordsResource
 	   
 	   if(strrPopup1PropertyArray.length>1)
 	   {
-		   strProperties = strrPopup1PropertyArray[1].split(";");
+		   strProperties = getBestProperties(strrPopup1PropertyArray[1]).split(";");
 	   }
 	   
 	   String[] strListIdTab = strListId.split(",");
@@ -216,6 +216,11 @@ public class RecordsResource
 	   }
 	   
 	   return null;
+   }
+   
+   public String getBestProperties(String strProperties) // ['nom', 'prenom', 'link']
+   {
+	   return strProperties.split("[")[1].split("]")[0];
    }
    
 }
