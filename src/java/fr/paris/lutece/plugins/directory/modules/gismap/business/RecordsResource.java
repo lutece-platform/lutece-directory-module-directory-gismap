@@ -219,8 +219,9 @@ public class RecordsResource
    }
    
    public String getBestProperties(String strProperties) // ['nom', 'prenom', 'link']
-   {
-	   return strProperties.split("[")[1].split("]")[0];
+   { 
+	   String strPropertiesReturn = strProperties.replace("[", "").replace("]", "");
+	   return strPropertiesReturn;
    }
    
 }
