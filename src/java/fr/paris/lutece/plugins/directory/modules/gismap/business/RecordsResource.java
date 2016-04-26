@@ -90,7 +90,14 @@ public class RecordsResource
                     if ( ( field != null ) && ( field.getTitle(  ).compareTo( "geometry" ) == 0 ) )
                     {
                         JSONObject jsonElementValue = new JSONObject(  );
-                        jsonElementValue.accumulate( "elementvalue", recordField.getValue(  ) );
+                        String strRecordField = recordField.getValue(  );
+
+                        if ( ( strRecordField != null ) && ( strRecordField.trim(  ).equals( "" ) ) )
+                        {
+                            strRecordField = null;
+                        }
+
+                        jsonElementValue.accumulate( "elementvalue", strRecordField );
 
                         JSONObject jsonElement = new JSONObject(  );
                         jsonElement.accumulate( "type", "Feature" );
@@ -105,8 +112,16 @@ public class RecordsResource
                         }
                         else
                         {
-                            jsonElement.accumulate( "geometry",
-                                jsonElementValue.getJSONObject( "elementvalue" ).getJSONObject( "geometry" ) );
+                            JSONObject elementValue = jsonElementValue.getJSONObject( "elementvalue" );
+
+                            if ( elementValue.isNullObject(  ) )
+                            {
+                                jsonElement.accumulate( "geometry", null );
+                            }
+                            else
+                            {
+                                jsonElement.accumulate( "geometry", elementValue.getJSONObject( "geometry" ) );
+                            }
                         }
 
                         array.add( jsonElement );
