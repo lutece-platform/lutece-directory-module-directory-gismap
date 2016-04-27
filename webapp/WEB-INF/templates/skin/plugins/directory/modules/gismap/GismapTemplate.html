@@ -83,20 +83,6 @@ function getAdditionalAdd (address)
 	return additionalAddress;
 };
 
-function geocodage${entry.idEntry}(){
-	var valX = $('#${entry.idEntry}_geomCentroidXGeocodage').val();
-	var valY = $('#${entry.idEntry}_geomCentroidYGeocodage').val();
-	$.ajax({
-		url: "http://localhost:8080/gismap/rest/gismap/xy/" + valX + "," + valY,
-        dataType: "jsonp",
-	    jsonpCallback: 'callback',
-        success: function( data ) {
-			var address = data.Adresse_tot+", "+data.Codepostal+" ";
-        	$("#${entry.idEntry}_address").val(address);
-			$("#${entry.idEntry}_additional_address").val(getAdditionalAdd(address));
-    	}
-    });
-};
 </script>
 
 <noscript>#i18n{module.genericattributes.gis.javascript.disabled}</noscript>
