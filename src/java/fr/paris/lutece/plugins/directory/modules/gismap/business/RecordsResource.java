@@ -47,6 +47,7 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -65,77 +66,18 @@ public class RecordsResource
     @GET
     @Path( "listRecordField/{listId}" )
     @Produces( MediaType.APPLICATION_JSON )
-    public String getListRecordField( @PathParam( "listId" )
+    public String getListRecordFieldGetMehod( @PathParam( "listId" )
     String strListId )
     {
-        String strRMMSHOWCENTROIDProperty = AppPropertiesService.getProperty( GISMAP_VIEW + getViewNumber( strListId ) +
-                PARAMETER + RMMSHOWCENTROID );
-        String[] strListIdTab = ( strListId != null ) ? strListId.split( "," ) : null;
-        JSONObject collection = new JSONObject(  );
-        collection.accumulate( "type", "FeatureCollection" );
+        return treatListRecordWS( strListId );
+    }
 
-        JSONArray array = new JSONArray(  );
-
-        if ( strListIdTab != null )
-        {
-            for ( int i = 0; i < strListIdTab.length; i++ )
-            {
-                int nIdRecordFiels = Integer.parseInt( strListIdTab[i] );
-                RecordField recordField = RecordFieldHome.findByPrimaryKey( nIdRecordFiels, DirectoryUtils.getPlugin(  ) );
-
-                if ( recordField != null )
-                {
-                    Field field = recordField.getField(  );
-
-                    if ( ( field != null ) && ( field.getTitle(  ).compareTo( "geometry" ) == 0 ) )
-                    {
-                        JSONObject jsonElementValue = new JSONObject(  );
-                        String strRecordField = recordField.getValue(  );
-
-                        if ( ( strRecordField != null ) && ( strRecordField.trim(  ).equals( "" ) ) )
-                        {
-                            strRecordField = null;
-                        }
-
-                        jsonElementValue.accumulate( "elementvalue", strRecordField );
-
-                        JSONObject jsonElement = new JSONObject(  );
-                        jsonElement.accumulate( "type", "Feature" );
-                        jsonElement.accumulate( "id", recordField.getRecord(  ).getIdRecord(  ) );
-                        jsonElement.accumulate( "properties",
-                            getProperties( recordField, strListId, getViewNumber( strListId ) ) );
-
-                        if ( ( strRMMSHOWCENTROIDProperty != null ) &&
-                                ( strRMMSHOWCENTROIDProperty.compareTo( "true" ) == 0 ) )
-                        {
-                            jsonElement.accumulate( "geometry", getCoordinatesXY( recordField, strListId ) );
-                        }
-                        else
-                        {
-                            JSONObject elementValue = jsonElementValue.getJSONObject( "elementvalue" );
-
-                            if ( elementValue.isNullObject(  ) )
-                            {
-                                jsonElement.accumulate( "geometry", null );
-                            }
-                            else
-                            {
-                                jsonElement.accumulate( "geometry", elementValue.getJSONObject( "geometry" ) );
-                            }
-                        }
-
-                        array.add( jsonElement );
-                    }
-                }
-            }
-        }
-
-        if ( array.size(  ) > 0 )
-        {
-            collection.accumulate( "features", array );
-        }
-
-        return "callback(" + collection.toString(  ) + ")";
+    @POST
+    @Path( "listRecordField/post" )
+    @Produces( MediaType.APPLICATION_JSON )
+    public String getListRecordFieldPostMethod( String strListId )
+    {
+        return treatListRecordWS( strListId );
     }
 
     public JSONObject getProperties( RecordField recordFieldParam, String strListId, int nKey )
@@ -327,5 +269,77 @@ public class RecordsResource
         String strPropertiesReturn = strProperties.replace( "[", "" ).replace( "]", "" );
 
         return strPropertiesReturn;
+    }
+
+    private String treatListRecordWS( String strListId )
+    {
+        String strRMMSHOWCENTROIDProperty = AppPropertiesService.getProperty( GISMAP_VIEW + getViewNumber( strListId ) +
+                PARAMETER + RMMSHOWCENTROID );
+        String[] strListIdTab = ( strListId != null ) ? strListId.split( "," ) : null;
+        JSONObject collection = new JSONObject(  );
+        collection.accumulate( "type", "FeatureCollection" );
+
+        JSONArray array = new JSONArray(  );
+
+        if ( strListIdTab != null )
+        {
+            for ( int i = 0; i < strListIdTab.length; i++ )
+            {
+                int nIdRecordFiels = Integer.parseInt( strListIdTab[i] );
+                RecordField recordField = RecordFieldHome.findByPrimaryKey( nIdRecordFiels, DirectoryUtils.getPlugin(  ) );
+
+                if ( recordField != null )
+                {
+                    Field field = recordField.getField(  );
+
+                    if ( ( field != null ) && ( field.getTitle(  ).compareTo( "geometry" ) == 0 ) )
+                    {
+                        JSONObject jsonElementValue = new JSONObject(  );
+                        String strRecordField = recordField.getValue(  );
+
+                        if ( ( strRecordField != null ) && ( strRecordField.trim(  ).equals( "" ) ) )
+                        {
+                            strRecordField = null;
+                        }
+
+                        jsonElementValue.accumulate( "elementvalue", strRecordField );
+
+                        JSONObject jsonElement = new JSONObject(  );
+                        jsonElement.accumulate( "type", "Feature" );
+                        jsonElement.accumulate( "id", recordField.getRecord(  ).getIdRecord(  ) );
+                        jsonElement.accumulate( "properties",
+                            getProperties( recordField, strListId, getViewNumber( strListId ) ) );
+
+                        if ( ( strRMMSHOWCENTROIDProperty != null ) &&
+                                ( strRMMSHOWCENTROIDProperty.compareTo( "true" ) == 0 ) )
+                        {
+                            jsonElement.accumulate( "geometry", getCoordinatesXY( recordField, strListId ) );
+                        }
+                        else
+                        {
+                            JSONObject elementValue = jsonElementValue.getJSONObject( "elementvalue" );
+
+                            if ( elementValue.isNullObject(  ) )
+                            {
+                                jsonElement.accumulate( "geometry", null );
+                            }
+                            else
+                            {
+                                jsonElement.accumulate( "geometry", elementValue.getJSONObject( "geometry" ) );
+                            }
+                        }
+
+                        array.add( jsonElement );
+                    }
+                }
+            }
+        }
+
+        if ( array.size(  ) > 0 )
+        {
+            collection.accumulate( "features", array );
+        }
+
+        return "callback(" + collection.toString(  ) + ")";
     }
 }
