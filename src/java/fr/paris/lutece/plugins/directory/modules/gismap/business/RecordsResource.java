@@ -33,7 +33,11 @@
  */
 package fr.paris.lutece.plugins.directory.modules.gismap.business;
 
+import java.util.List;
+
+import fr.paris.lutece.plugins.directory.business.Entry;
 import fr.paris.lutece.plugins.directory.business.Field;
+import fr.paris.lutece.plugins.directory.business.FieldHome;
 import fr.paris.lutece.plugins.directory.business.IEntry;
 import fr.paris.lutece.plugins.directory.business.Record;
 import fr.paris.lutece.plugins.directory.business.RecordField;
@@ -42,7 +46,6 @@ import fr.paris.lutece.plugins.directory.business.RecordHome;
 import fr.paris.lutece.plugins.directory.utils.DirectoryUtils;
 import fr.paris.lutece.portal.service.util.AppLogService;
 import fr.paris.lutece.portal.service.util.AppPropertiesService;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -66,8 +69,7 @@ public class RecordsResource
     @GET
     @Path( "listRecordField/{listId}" )
     @Produces( MediaType.APPLICATION_JSON )
-    public String getListRecordFieldGetMehod( @PathParam( "listId" )
-    String strListId )
+    public String getListRecordFieldGetMehod( @PathParam( "listId" ) String strListId )
     {
         return treatListRecordWS( strListId );
     }
@@ -179,19 +181,22 @@ public class RecordsResource
 
                 if ( recordField != null )
                 {
-                    Field field = recordField.getField(  );
-
-                    if ( ( field != null ) && ( field.getTitle(  ).compareTo( "viewNumberGes" ) == 0 ) )
-                    {
-                        strViewNumberValue = field.getValue(  );
-
-                        break;
-                    }
+                    Entry entry = (Entry) recordField.getEntry();
+                    int idEntry = entry.getIdEntry();
+                    List<Field> fieldlist = FieldHome.getFieldListByIdEntry(idEntry, DirectoryUtils.getPlugin(  ));
+                    
+                    for (Field field : fieldlist) {
+                    	if ( ( field != null ) && ( field.getTitle(  ).compareTo( "viewNumberGes" ) == 0 ) )
+                        {
+                    		strViewNumberValue = field.getValue(  );
+                            break;
+                        }
+					}
                 }
             }
         }
-
-        return ( strViewNumberValue == null ) ? 1 : Integer.parseInt( strViewNumberValue );
+        //( strViewNumberValue == null ) ? 1 : Integer.parseInt( strViewNumberValue );
+        return Integer.parseInt( strViewNumberValue );
     }
 
     public String getLink( Record record )
@@ -273,8 +278,9 @@ public class RecordsResource
 
     private String treatListRecordWS( String strListId )
     {
-        String strRMMSHOWCENTROIDProperty = AppPropertiesService.getProperty( GISMAP_VIEW + getViewNumber( strListId ) +
+    	String strRMMSHOWCENTROIDProperty = AppPropertiesService.getProperty( GISMAP_VIEW + getViewNumber( strListId ) +
                 PARAMETER + RMMSHOWCENTROID );
+    
         String[] strListIdTab = ( strListId != null ) ? strListId.split( "," ) : null;
         JSONObject collection = new JSONObject(  );
         collection.accumulate( "type", "FeatureCollection" );
