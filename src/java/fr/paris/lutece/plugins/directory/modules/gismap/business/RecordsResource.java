@@ -35,7 +35,6 @@ package fr.paris.lutece.plugins.directory.modules.gismap.business;
 
 import java.util.List;
 
-import fr.paris.lutece.plugins.directory.business.Entry;
 import fr.paris.lutece.plugins.directory.business.Field;
 import fr.paris.lutece.plugins.directory.business.FieldHome;
 import fr.paris.lutece.plugins.directory.business.IEntry;
@@ -174,28 +173,33 @@ public class RecordsResource
 
         if ( strListIdTab != null )
         {
-            for ( int i = 0; i < strListIdTab.length; i++ )
-            {
-                int nIdRecordFiels = Integer.parseInt( strListIdTab[i] );
+        	boolean bFind = false;
+        	for ( int nId = 0; nId < strListIdTab.length; nId++ )
+        	{
+        		if ( bFind )
+        			break;
+        		int nIdRecordFiels = Integer.parseInt( strListIdTab[nId] );
                 RecordField recordField = RecordFieldHome.findByPrimaryKey( nIdRecordFiels, DirectoryUtils.getPlugin(  ) );
-
                 if ( recordField != null )
                 {
-                    Entry entry = (Entry) recordField.getEntry();
-                    int idEntry = entry.getIdEntry();
-                    List<Field> fieldlist = FieldHome.getFieldListByIdEntry(idEntry, DirectoryUtils.getPlugin(  ));
-                    
-                    for (Field field : fieldlist) {
-                    	if ( ( field != null ) && ( field.getTitle(  ).compareTo( "viewNumberGes" ) == 0 ) )
+                	IEntry entry = recordField.getEntry(  );
+                	if(entry!=null)
+                	{
+                		List<Field> fieldList = FieldHome.getFieldListByIdEntry(entry.getIdEntry(), DirectoryUtils.getPlugin(  ));
+                        for (Field field : fieldList) 
                         {
-                    		strViewNumberValue = field.getValue(  );
-                            break;
-                        }
-					}
-                }
-            }
+                        	if ( field != null && field.getTitle(  ) != null && field.getTitle(  ).compareTo( "viewNumberGes" ) == 0  )
+                            {
+                        		strViewNumberValue = field.getValue(  );
+                        		bFind = true;
+                                break;
+                            }
+    					}
+                	}
+                 }
+        	}
         }
-        //( strViewNumberValue == null ) ? 1 : Integer.parseInt( strViewNumberValue );
+        //return strViewNumberValue == null ? 0 : Integer.parseInt( strViewNumberValue );
         return Integer.parseInt( strViewNumberValue );
     }
 
