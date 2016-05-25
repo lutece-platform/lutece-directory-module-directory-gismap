@@ -33,8 +33,6 @@
  */
 package fr.paris.lutece.plugins.directory.modules.gismap.business;
 
-import java.util.List;
-
 import fr.paris.lutece.plugins.directory.business.Field;
 import fr.paris.lutece.plugins.directory.business.FieldHome;
 import fr.paris.lutece.plugins.directory.business.IEntry;
@@ -45,8 +43,11 @@ import fr.paris.lutece.plugins.directory.business.RecordHome;
 import fr.paris.lutece.plugins.directory.utils.DirectoryUtils;
 import fr.paris.lutece.portal.service.util.AppLogService;
 import fr.paris.lutece.portal.service.util.AppPropertiesService;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+
+import java.util.List;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -68,7 +69,8 @@ public class RecordsResource
     @GET
     @Path( "listRecordField/{listId}" )
     @Produces( MediaType.APPLICATION_JSON )
-    public String getListRecordFieldGetMehod( @PathParam( "listId" ) String strListId )
+    public String getListRecordFieldGetMehod( @PathParam( "listId" )
+    String strListId )
     {
         return treatListRecordWS( strListId );
     }
@@ -173,32 +175,43 @@ public class RecordsResource
 
         if ( strListIdTab != null )
         {
-        	boolean bFind = false;
-        	for ( int nId = 0; nId < strListIdTab.length; nId++ )
-        	{
-        		if ( bFind )
-        			break;
-        		int nIdRecordFiels = Integer.parseInt( strListIdTab[nId] );
+            boolean bFind = false;
+
+            for ( int nId = 0; nId < strListIdTab.length; nId++ )
+            {
+                if ( bFind )
+                {
+                    break;
+                }
+
+                int nIdRecordFiels = Integer.parseInt( strListIdTab[nId] );
                 RecordField recordField = RecordFieldHome.findByPrimaryKey( nIdRecordFiels, DirectoryUtils.getPlugin(  ) );
+
                 if ( recordField != null )
                 {
-                	IEntry entry = recordField.getEntry(  );
-                	if(entry!=null)
-                	{
-                		List<Field> fieldList = FieldHome.getFieldListByIdEntry(entry.getIdEntry(), DirectoryUtils.getPlugin(  ));
-                        for (Field field : fieldList) 
+                    IEntry entry = recordField.getEntry(  );
+
+                    if ( entry != null )
+                    {
+                        List<Field> fieldList = FieldHome.getFieldListByIdEntry( entry.getIdEntry(  ),
+                                DirectoryUtils.getPlugin(  ) );
+
+                        for ( Field field : fieldList )
                         {
-                        	if ( field != null && field.getTitle(  ) != null && field.getTitle(  ).compareTo( "viewNumberGes" ) == 0  )
+                            if ( ( field != null ) && ( field.getTitle(  ) != null ) &&
+                                    ( field.getTitle(  ).compareTo( "viewNumberGes" ) == 0 ) )
                             {
-                        		strViewNumberValue = field.getValue(  );
-                        		bFind = true;
+                                strViewNumberValue = field.getValue(  );
+                                bFind = true;
+
                                 break;
                             }
-    					}
-                	}
-                 }
-        	}
+                        }
+                    }
+                }
+            }
         }
+
         //return strViewNumberValue == null ? 0 : Integer.parseInt( strViewNumberValue );
         return Integer.parseInt( strViewNumberValue );
     }
@@ -282,9 +295,9 @@ public class RecordsResource
 
     private String treatListRecordWS( String strListId )
     {
-    	String strRMMSHOWCENTROIDProperty = AppPropertiesService.getProperty( GISMAP_VIEW + getViewNumber( strListId ) +
+        String strRMMSHOWCENTROIDProperty = AppPropertiesService.getProperty( GISMAP_VIEW + getViewNumber( strListId ) +
                 PARAMETER + RMMSHOWCENTROID );
-    
+
         String[] strListIdTab = ( strListId != null ) ? strListId.split( "," ) : null;
         JSONObject collection = new JSONObject(  );
         collection.accumulate( "type", "FeatureCollection" );

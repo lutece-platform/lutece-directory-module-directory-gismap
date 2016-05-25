@@ -33,115 +33,116 @@
  */
 package fr.paris.lutece.plugins.directory.modules.gismap.service;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
 import fr.paris.lutece.plugins.directory.business.IMapProvider;
 import fr.paris.lutece.plugins.gismap.business.View;
 import fr.paris.lutece.plugins.gismap.business.ViewHome;
 import fr.paris.lutece.portal.service.util.AppPropertiesService;
 import fr.paris.lutece.util.ReferenceItem;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
 
 /**
- * 
+ *
  * GismapProvider : provides Gismap support for Directory
- * 
+ *
  */
 public class GismapProvider implements IMapProvider
 {
-	private static final String PROPERTY_KEY = "directory-gismap.key";
-	private static final String PROPERTY_DISPLAYED_NAME = "directory-gismap.displayName";
-	private static final String TEMPLATE_HTML = "../modules/gismap/GismapTemplate.html";
-	private static final String TEMPLATE_FRONT_HTML = "modules/gismap/GismapTemplate.html";
-	private static final String TEMPLATE_FRONT_LIST_HTML = "modules/gismap/GismapListTemplate.html";
-	private static final String TEMPLATE_BACK_LIST_HTML = "modules/gismap/GismapListTemplate.html";
-	
-	private static final boolean CONSTANT_MAP_LIST_SUPPORTED = true;
-	
-	/**
-	 * {@inheritDoc}
-	 */
-	public String getKey(  ) 
-	{
-		return AppPropertiesService.getProperty( PROPERTY_KEY );
-	}
-		
-	/**
-	 * {@inheritDoc}
-	 */
-	public String getDisplayedName(  ) 
-	{
-		return AppPropertiesService.getProperty( PROPERTY_DISPLAYED_NAME );
-	}
-	
-	/**
-	 * {@inheritDoc}
-	 */
-	public String getHtmlCode(  ) 
-	{
-		return TEMPLATE_HTML;
-	}
-		
-	/**
-	 * {@inheritDoc}
-	 */
-	public ReferenceItem toRefItem(  )
-	{
-		ReferenceItem refItem = new ReferenceItem(  );
-		
-		refItem.setCode( getKey(  ) );
-		refItem.setName( getDisplayedName(  ) );
-		
-		return refItem;
-	}
-	
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public String toString(  ) 
-	{
-		return "Directory Provider";
-	}
+    private static final String PROPERTY_KEY = "directory-gismap.key";
+    private static final String PROPERTY_DISPLAYED_NAME = "directory-gismap.displayName";
+    private static final String TEMPLATE_HTML = "../modules/gismap/GismapTemplate.html";
+    private static final String TEMPLATE_FRONT_HTML = "modules/gismap/GismapTemplate.html";
+    private static final String TEMPLATE_FRONT_LIST_HTML = "modules/gismap/GismapListTemplate.html";
+    private static final String TEMPLATE_BACK_LIST_HTML = "modules/gismap/GismapListTemplate.html";
+    private static final boolean CONSTANT_MAP_LIST_SUPPORTED = true;
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public String getFrontHtmlCode(  ) 
-	{
-		return TEMPLATE_FRONT_HTML;
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public String getKey(  )
+    {
+        return AppPropertiesService.getProperty( PROPERTY_KEY );
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public String getFrontListHtmlCode(  ) 
-	{
-		return TEMPLATE_FRONT_LIST_HTML;
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public String getDisplayedName(  )
+    {
+        return AppPropertiesService.getProperty( PROPERTY_DISPLAYED_NAME );
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public String getBackListHtmlCode(  )
-	{
-		return TEMPLATE_BACK_LIST_HTML;
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public String getHtmlCode(  )
+    {
+        return TEMPLATE_HTML;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public boolean isMapListSupported(  )
-	{
-		return CONSTANT_MAP_LIST_SUPPORTED;
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public ReferenceItem toRefItem(  )
+    {
+        ReferenceItem refItem = new ReferenceItem(  );
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public Object getParameter( int nKey) {
+        refItem.setCode( getKey(  ) );
+        refItem.setName( getDisplayedName(  ) );
+
+        return refItem;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String toString(  )
+    {
+        return "Directory Provider";
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public String getFrontHtmlCode(  )
+    {
+        return TEMPLATE_FRONT_HTML;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public String getFrontListHtmlCode(  )
+    {
+        return TEMPLATE_FRONT_LIST_HTML;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public String getBackListHtmlCode(  )
+    {
+        return TEMPLATE_BACK_LIST_HTML;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public boolean isMapListSupported(  )
+    {
+        return CONSTANT_MAP_LIST_SUPPORTED;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Object getParameter( int nKey )
+    {
         View view = ViewHome.findByPrimaryKey( nKey );
-		return view;
-	}
+
+        return view;
+    }
 }
