@@ -5,6 +5,7 @@
         <version>3.0.3</version>
     </parent>
 	<modelVersion>4.0.0</modelVersion>
+	<groupId>fr.paris.lutece.plugins</groupId>
 	<artifactId>module-directory-gismap</artifactId>
 	<packaging>lutece-plugin</packaging>
 	<version>1.0.0-SNAPSHOT</version>
@@ -44,6 +45,21 @@
             <version>[1.0.0,)</version>
             <type>lutece-plugin</type>
         </dependency>
+        
+        <dependency>
+            <groupId>fr.paris.lutece.plugins</groupId>
+            <artifactId>module-form-exportdirectory</artifactId>
+            <version>3.0.1-SNAPSHOT</version>
+            <type>lutece-plugin</type>
+        </dependency>
+        
+        <dependency>
+            <groupId>fr.paris.lutece.plugins</groupId>
+            <artifactId>module-genericattributes-gismap</artifactId>
+            <version>[1.0.0-SNAPSHOT,)</version>
+            <type>lutece-plugin</type>
+        </dependency>
+        
 	</dependencies>
         
 	<properties>
