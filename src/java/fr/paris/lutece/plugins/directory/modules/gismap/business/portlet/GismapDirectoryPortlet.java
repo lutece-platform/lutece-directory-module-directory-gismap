@@ -35,6 +35,8 @@ package fr.paris.lutece.plugins.directory.modules.gismap.business.portlet;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang.BooleanUtils;
+
 import fr.paris.lutece.plugins.directory.modules.gismap.service.GismapDirectoryService;
 import fr.paris.lutece.plugins.directory.modules.gismap.utils.GismapDirectoryUtils;
 import fr.paris.lutece.portal.business.portlet.Portlet;
@@ -76,17 +78,20 @@ public class GismapDirectoryPortlet extends Portlet
     @Override
     public String getXml( HttpServletRequest request )
     {
-        GismapDirectoryPortlet portlet = ( GismapDirectoryPortlet ) PortletHome.findByPrimaryKey( getId( ) );
-        String viewId = GismapDirectoryUtils.getNbViewByDirectoryId( portlet.getDirectoryId( ) );
+    	GismapDirectoryPortlet portlet = ( GismapDirectoryPortlet ) PortletHome.findByPrimaryKey( getId( ) );
+    	String viewId = GismapDirectoryUtils.getNbViewByDirectoryId( portlet.getDirectoryId( ) );
 
-        StringBuffer strXml = new StringBuffer( );
-        XmlUtil.beginElement( strXml, TAG_GISMAP_PORTLET );
-        XmlUtil.addElementHtml( strXml, TAG_GISMAP_PORTLET_CONTENT, "<h3>" + portlet.getName( ) + "</h3>" );
-        XmlUtil.addElementHtml( strXml, TAG_GISMAP_PORTLET_CONTENT, GismapDirectoryService.getInstance( ).getMapTemplateWithDirectoryParam( request, portlet.getDirectoryId( ), viewId ) );
+    	StringBuffer strXml = new StringBuffer( );
+    	XmlUtil.beginElement( strXml, TAG_GISMAP_PORTLET );
+    	if ( !BooleanUtils.toBoolean( portlet.getDisplayPortletTitle( ) ) )
+    	{
+    		XmlUtil.addElementHtml( strXml, TAG_GISMAP_PORTLET_CONTENT, "<h3>" + portlet.getName( ) + "</h3>" );
+    	}
+    	XmlUtil.addElementHtml( strXml, TAG_GISMAP_PORTLET_CONTENT, GismapDirectoryService.getInstance( ).getMapTemplateWithDirectoryParam( request, portlet.getDirectoryId( ), viewId ) );
 
-        XmlUtil.endElement( strXml, TAG_GISMAP_PORTLET );
+    	XmlUtil.endElement( strXml, TAG_GISMAP_PORTLET );
 
-        return addPortletTags( strXml );
+    	return addPortletTags( strXml );
     }
 
     /**

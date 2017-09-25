@@ -65,6 +65,7 @@ public class GismapDirectoryPortletJspBean extends PortletJspBean
 
     private static final long   serialVersionUID                    = -2619049973871862337L;
     private static final String MARK_DIRECTORY_LIST                 = "directory_list";
+    private static final String MARK_DIRECTORY_ID                 = "directory_id";
     private static final String PARAMETER_ID_DIRECTORY              = "id_directory";
     private static final String MESSAGE_YOU_MUST_CHOOSE_A_DIRECTORY = "gismap.message.mandatory.directory";
 
@@ -89,6 +90,7 @@ public class GismapDirectoryPortletJspBean extends PortletJspBean
 
         ReferenceList refDirectory = DirectoryHome.getDirectoryList( PluginService.getPlugin( DirectoryPlugin.PLUGIN_NAME ) );
         model.put( MARK_DIRECTORY_LIST, refDirectory );
+        model.put( MARK_DIRECTORY_ID, 1);
         HtmlTemplate template = getCreateTemplate( strIdPage, strIdPortletType, model );
 
         return template.getHtml( );
@@ -106,6 +108,7 @@ public class GismapDirectoryPortletJspBean extends PortletJspBean
         HashMap<String, Object> model = new HashMap<>( );
         String strPortletId = request.getParameter( PARAMETER_PORTLET_ID );
         int nPortletId = -1;
+        int nDirectoryId = -1;
 
         try
         {
@@ -116,9 +119,11 @@ public class GismapDirectoryPortletJspBean extends PortletJspBean
         }
 
         GismapDirectoryPortlet portlet = ( GismapDirectoryPortlet ) PortletHome.findByPrimaryKey( nPortletId );
-
+        nDirectoryId = portlet.getDirectoryId( );
+        
         ReferenceList refDirectory = DirectoryHome.getDirectoryList( PluginService.getPlugin( DirectoryPlugin.PLUGIN_NAME ) );
         model.put( MARK_DIRECTORY_LIST, refDirectory );
+        model.put( MARK_DIRECTORY_ID, nDirectoryId);
 
         HtmlTemplate template = getModifyTemplate( portlet, model );
 
