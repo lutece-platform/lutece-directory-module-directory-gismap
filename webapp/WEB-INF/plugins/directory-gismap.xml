@@ -23,5 +23,18 @@
 	<db-pool-required>0</db-pool-required>
     <rbac-resource-types>
 	</rbac-resource-types>
+	
+	    <!-- Portlet parameters -->
+    <portlets>
+        <portlet>
+            <portlet-class>fr.paris.lutece.plugins.directory.modules.gismap.business.portlet.GismapDirectoryPortletHome</portlet-class>
+            <portlet-type-id>GISMAP_PORTLET</portlet-type-id>
+            <portlet-type-name>gismap.portlet.name</portlet-type-name>
+            <portlet-creation-url>plugins/directory/modules/gismap/CreatePortletDirectoryGismap.jsp</portlet-creation-url>
+            <portlet-update-url>plugins/directory/modules/gismap/ModifyPortletDirectoryGismap.jsp</portlet-update-url>
+            <portlet-create-action-url>plugins/directory/modules/gismap/DoCreatPortletDirectoryGismap.jsp</portlet-create-action-url>
+            <portlet-modify-action-url>plugins/directory/modules/gismap/DoModifyPortletDirectoryGismap.jsp</portlet-modify-action-url>
+        </portlet>
+    </portlets>
     
 </plug-in>
