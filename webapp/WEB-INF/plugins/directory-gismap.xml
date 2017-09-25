@@ -4,7 +4,7 @@
     <!-- Plugin Informations -->
 	<name>directory-gismap</name>
 	<class>fr.paris.lutece.plugins.directory.modules.gismap.service.DirectoryGismapPlugin</class>
-	<version>1.0.1-SNAPSHOT</version>
+	<version>1.0.1</version>
 	<description>module.directory.gismap.module.description</description>
 	<documentation/>
 	<installation/>
