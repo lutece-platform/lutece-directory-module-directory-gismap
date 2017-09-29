@@ -34,17 +34,30 @@
 package fr.paris.lutece.plugins.directory.modules.gismap.web.portlet;
 
 import java.util.HashMap;
-
+import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang.StringUtils;
+
+import fr.paris.lutece.plugins.directory.business.DirectoryFilter;
 import fr.paris.lutece.plugins.directory.business.DirectoryHome;
+import fr.paris.lutece.plugins.directory.business.EntryFilter;
+import fr.paris.lutece.plugins.directory.business.EntryHome;
+import fr.paris.lutece.plugins.directory.business.EntryTypeGeolocation;
+import fr.paris.lutece.plugins.directory.business.Field;
+import fr.paris.lutece.plugins.directory.business.FieldHome;
+import fr.paris.lutece.plugins.directory.business.IEntry;
+import fr.paris.lutece.plugins.directory.business.Directory;
 import fr.paris.lutece.plugins.directory.modules.gismap.business.portlet.GismapDirectoryPortlet;
 import fr.paris.lutece.plugins.directory.modules.gismap.business.portlet.GismapDirectoryPortletHome;
+import fr.paris.lutece.plugins.directory.modules.gismap.service.GismapProvider;
 import fr.paris.lutece.plugins.directory.service.DirectoryPlugin;
+import fr.paris.lutece.plugins.directory.utils.DirectoryUtils;
 import fr.paris.lutece.plugins.gismap.web.GismapJspBean;
 import fr.paris.lutece.portal.business.portlet.PortletHome;
 import fr.paris.lutece.portal.service.message.AdminMessage;
 import fr.paris.lutece.portal.service.message.AdminMessageService;
+import fr.paris.lutece.portal.service.plugin.Plugin;
 import fr.paris.lutece.portal.service.plugin.PluginService;
 import fr.paris.lutece.portal.service.util.AppLogService;
 import fr.paris.lutece.portal.web.portlet.PortletJspBean;
@@ -67,13 +80,24 @@ public class GismapDirectoryPortletJspBean extends PortletJspBean
     private static final String MARK_DIRECTORY_LIST                 = "directory_list";
     private static final String MARK_DIRECTORY_ID                 = "directory_id";
     private static final String PARAMETER_ID_DIRECTORY              = "id_directory";
-    private static final String MESSAGE_YOU_MUST_CHOOSE_A_DIRECTORY = "gismap.message.mandatory.directory";
+    private static final String MESSAGE_YOU_MUST_CHOOSE_A_DIRECTORY = "module.directory.gismap.message.mandatory.directory";
 
    
     private static final String JSP_ADMIN_SITE = "../../../../site/AdminSite.jsp";
+
+	private static final String TYPE_GEOLOC_CLASSNAME = EntryTypeGeolocation.class.getName( );
+
+	private static final Object GISMAPPROVIDER_CLASSNAME = GismapProvider.class.getName( );
+
+	private static final String MESSAGE_ERROR_PLUGIN_DIRECTORY_DISABLED = "module.directory.gismap.message.plugin.directory.disabled";
+
+	private static final String MESSAGE_DIRECTORY_GEOLOCATION_MISCONFIG = "module.directory.gismap.message.directory.geolocation_misconfiguration";
     
     // //////////////////////////////////////////////////////////////////////////
     // Class attributes
+    
+    private static Plugin _directoryPlugin = PluginService.getPlugin( DirectoryPlugin.PLUGIN_NAME );
+    private static boolean _bDirectoryAvailable = PluginService.isPluginEnable( DirectoryPlugin.PLUGIN_NAME  );
 
     /**
      * Returns the Download portlet creation view
@@ -84,19 +108,24 @@ public class GismapDirectoryPortletJspBean extends PortletJspBean
     @Override
     public String getCreate( HttpServletRequest request )
     {
+    	if (!_bDirectoryAvailable)
+    	{
+    		return AdminMessageService.getMessageUrl( request, MESSAGE_ERROR_PLUGIN_DIRECTORY_DISABLED,
+                    AdminMessage.TYPE_STOP );
+    	}
         HashMap<String, Object> model = new HashMap<>( );
         String strIdPage = request.getParameter( PARAMETER_PAGE_ID );
         String strIdPortletType = request.getParameter( PARAMETER_PORTLET_TYPE_ID );
-
-        ReferenceList refDirectory = DirectoryHome.getDirectoryList( PluginService.getPlugin( DirectoryPlugin.PLUGIN_NAME ) );
-        model.put( MARK_DIRECTORY_LIST, refDirectory );
+        		
+        model.put( MARK_DIRECTORY_LIST, GetDirectoriesWithGeolocation( ) );
         model.put( MARK_DIRECTORY_ID, 1);
         HtmlTemplate template = getCreateTemplate( strIdPage, strIdPortletType, model );
 
         return template.getHtml( );
     }
 
-    /**
+
+	/**
      * Returns the Download portlet modification view
      *
      * @param request The Http request
@@ -105,6 +134,11 @@ public class GismapDirectoryPortletJspBean extends PortletJspBean
     @Override
     public String getModify( HttpServletRequest request )
     {
+    	if (!_bDirectoryAvailable)
+    	{
+    		return AdminMessageService.getMessageUrl( request, MESSAGE_ERROR_PLUGIN_DIRECTORY_DISABLED,
+                    AdminMessage.TYPE_STOP );
+    	}
         HashMap<String, Object> model = new HashMap<>( );
         String strPortletId = request.getParameter( PARAMETER_PORTLET_ID );
         int nPortletId = -1;
@@ -121,8 +155,7 @@ public class GismapDirectoryPortletJspBean extends PortletJspBean
         GismapDirectoryPortlet portlet = ( GismapDirectoryPortlet ) PortletHome.findByPrimaryKey( nPortletId );
         nDirectoryId = portlet.getDirectoryId( );
         
-        ReferenceList refDirectory = DirectoryHome.getDirectoryList( PluginService.getPlugin( DirectoryPlugin.PLUGIN_NAME ) );
-        model.put( MARK_DIRECTORY_LIST, refDirectory );
+        model.put( MARK_DIRECTORY_LIST, GetDirectoriesWithGeolocation( ) );
         model.put( MARK_DIRECTORY_ID, nDirectoryId);
 
         HtmlTemplate template = getModifyTemplate( portlet, model );
@@ -167,6 +200,11 @@ public class GismapDirectoryPortletJspBean extends PortletJspBean
             return strErrorUrl;
         }
 
+        if (!CheckGeolocationParams( nDirectoryId ) )
+        {
+        	return AdminMessageService.getMessageUrl( request, MESSAGE_DIRECTORY_GEOLOCATION_MISCONFIG, AdminMessage.TYPE_STOP );
+        }
+        
         portlet.setPageId( nPageId );
         portlet.setDirectoryId( nDirectoryId );
 
@@ -216,6 +254,10 @@ public class GismapDirectoryPortletJspBean extends PortletJspBean
             return strErrorUrl;
         }
 
+        if (!CheckGeolocationParams( nDirectoryId ) )
+        {
+        	return AdminMessageService.getMessageUrl( request, MESSAGE_DIRECTORY_GEOLOCATION_MISCONFIG, AdminMessage.TYPE_STOP );
+        }
         portlet.setDirectoryId( nDirectoryId );
         // updates the portlet
         portlet.update( );
@@ -224,7 +266,52 @@ public class GismapDirectoryPortletJspBean extends PortletJspBean
         return getPageUrl( portlet.getPageId( ) );
     }
     
-    /**
+    
+	/**
+     * Check for missing View configuration inside Geolocation fields of the provided directory identifier.
+     * Return true if check passed
+     * 
+     * @param nDirectoryId
+     *            Directory identifier
+     * @return True if view configuration is OK for this directory
+     */
+    private boolean CheckGeolocationParams(int nDirectoryId) {
+
+    	boolean bViewsConfigured = true;
+    	
+    	EntryFilter filterEntry = new EntryFilter( );
+    	filterEntry.setIsComment( EntryFilter.FILTER_FALSE );
+    	filterEntry.setIsGroup( EntryFilter.FILTER_FALSE );
+    	filterEntry.setIdDirectory( nDirectoryId );
+        List<IEntry> listEntry = EntryHome.getEntryList( filterEntry, _directoryPlugin );
+    	
+        for (IEntry entry : listEntry)
+        {
+        	if (entry.getEntryType( ).getClassName().equals(  TYPE_GEOLOC_CLASSNAME ) )
+        	{
+
+        		 List<Field> fieldList = FieldHome.getFieldListByIdEntry( entry.getIdEntry(  ),
+                         DirectoryUtils.getPlugin(  ) );
+
+                 for ( Field field : fieldList )
+                 {
+                     if ( ( field != null ) && ( field.getTitle(  ) != null ) &&
+                             ( field.getTitle(  ).equals(EntryTypeGeolocation.CONSTANT_VIEW_NUMBER_GES ) ) )
+                     {
+                         if ( StringUtils.isEmpty(field.getValue(  ) ) )
+                        		 {
+                        	 return false;
+                        		 };
+                     }
+                 }
+
+        	}
+        }    	
+		return bViewsConfigured;
+	}
+
+
+	/**
      * Gets the page URL with relative path
      * 
      * @param nIdPage
@@ -236,4 +323,49 @@ public class GismapDirectoryPortletJspBean extends PortletJspBean
     {
         return JSP_ADMIN_SITE + "?" + PARAMETER_PAGE_ID + "=" + nIdPage;
     }
+    
+    /**
+     * Fetch all Enabled Directories containing geolocation entries with gismap as MapProvider
+     * and return them as a referenceList
+     * 
+     * @return The Directory reference List
+     */
+    private ReferenceList GetDirectoriesWithGeolocation( )
+    {
+    	ReferenceList refDirectory = new ReferenceList( );
+    	
+    	DirectoryFilter filter = new DirectoryFilter( );
+    	filter.setIsDisabled( DirectoryFilter.FILTER_TRUE );    	
+        List<Directory> directoryList = DirectoryHome.getDirectoryList(filter, PluginService.getPlugin( DirectoryPlugin.PLUGIN_NAME ) );
+        
+    	EntryFilter filterEntry = new EntryFilter( );
+    	filterEntry.setIsComment( EntryFilter.FILTER_FALSE );
+    	filterEntry.setIsGroup( EntryFilter.FILTER_FALSE );
+        
+    	
+        for (Directory directory : directoryList)
+        {
+      	
+        	filterEntry.setIdDirectory( directory.getIdDirectory( )  );
+            List<IEntry> listEntry = EntryHome.getEntryList( filterEntry, _directoryPlugin );
+        	
+            for (IEntry entry : listEntry)
+            {
+            	if (entry.getEntryType( ).getClassName().equals( TYPE_GEOLOC_CLASSNAME ) )
+            	{
+
+            		if (entry.getMapProvider( )!= null && entry.getMapProvider( ).getClass( ).getName( ).equals( GISMAPPROVIDER_CLASSNAME)  )
+            		{
+                		refDirectory.addItem( directory.getIdDirectory( ), directory.getTitle( ) );
+                		break;
+            		}
+
+            	}
+            }
+        	
+        }
+    	
+		return refDirectory;
+	}
+    
 }

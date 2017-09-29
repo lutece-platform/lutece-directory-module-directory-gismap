@@ -38,11 +38,14 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang.StringUtils;
+
 import fr.paris.lutece.plugins.directory.modules.gismap.utils.GismapDirectoryUtils;
 import fr.paris.lutece.plugins.gismap.business.MapParameter;
 import fr.paris.lutece.plugins.gismap.business.View;
 import fr.paris.lutece.plugins.gismap.business.ViewHome;
 import fr.paris.lutece.portal.web.l10n.LocaleService;
+import fr.paris.lutece.portal.service.i18n.I18nService;
 import fr.paris.lutece.portal.service.template.AppTemplateService;
 import fr.paris.lutece.portal.service.util.AppPathService;
 import fr.paris.lutece.portal.service.util.AppPropertiesService;
@@ -57,86 +60,95 @@ import java.util.Locale;
  */
 public class GismapDirectoryService
 {
-    public static final String   GISMAP_DEFAULT_VIEW_PROPERTIES = "gismap.mainmap.defaultview";
+	public static final String   GISMAP_DEFAULT_VIEW_PROPERTIES = "gismap.mainmap.defaultview";
 
-    // Markers
-    public static final String   GISMAP_VIEW_INIT               = "gismap.view.init";
-    private static final String  PARAMETER_MAP_PARAMETER        = "map_parameter";
-    private static final String  PARAMETER_ADD_PARAMETER        = "add_parameter";
-    private static final String  PARAMETER_DEFAULT_VIEW         = "default_view";
+	// Markers
+	public static final String   GISMAP_VIEW_INIT               = "gismap.view.init";
+	private static final String  PARAMETER_MAP_PARAMETER        = "map_parameter";
+	private static final String  PARAMETER_ADD_PARAMETER        = "add_parameter";
+	private static final String  PARAMETER_DEFAULT_VIEW         = "default_view";
 
-    // Templates
-    private static GismapDirectoryService _singleton                     = new GismapDirectoryService( );
+	// Templates
+	private static GismapDirectoryService _singleton                     = new GismapDirectoryService( );
 
-    // Constant
-    public static final String   GISMAP_URL_REST                = "rest/directory-gismap/listRecordField/";
-    public static final String   PARAM_VIEW_URLGEOJSON          = "UrlGeoJSON1";
-    public static final String   PARAM_VIEW_GEOJSON1            = "GeoJSON1";
-    public static final String   PARAM_VIEW_THEMATICSIMPLE1     = "ThematicSimple1";
-    public static final String   PARAM_VIEW_POPUP1              = "Popup1";
-    public static final String   PARAM_VIEW_SHOWLINK            = "Popup_ShowLink";
+	// Constant
+	public static final String   GISMAP_URL_REST                = "rest/directory-gismap/listRecordField/";
+	public static final String   PARAM_VIEW_URLGEOJSON          = "UrlGeoJSON1";
+	public static final String   PARAM_VIEW_GEOJSON1            = "GeoJSON1";
+	public static final String   PARAM_VIEW_THEMATICSIMPLE1     = "ThematicSimple1";
+	public static final String   PARAM_VIEW_POPUP1              = "Popup1";
+	public static final String   PARAM_VIEW_SHOWLINK            = "Popup_ShowLink";
 
-    /**
-     * Initialize the GISMAP service
-     *
-     */
-    public void init( )
-    {
-        // TODO
-    }
+	//MESSAGES
+    private static final String UNAVAILABILITY_MESSAGE = "module.directory.gismap.message.portlet.unavailable.view.misconfiguration";
+	/**
+	 * Initialize the GISMAP service
+	 *
+	 */
+	public void init( )
+	{
+		// TODO
+	}
 
-    /**
-     * Returns the instance of the singleton
-     *
-     * @return The instance of the singleton
-     */
-    public static GismapDirectoryService getInstance( )
-    {
-        return _singleton;
-    }
+	/**
+	 * Returns the instance of the singleton
+	 *
+	 * @return The instance of the singleton
+	 */
+	public static GismapDirectoryService getInstance( )
+	{
+		return _singleton;
+	}
 
 
-    public String getMapTemplateWithDirectoryParam( HttpServletRequest request, int directoryId, String viewId )
-    {
-        Map<String, Object> model = new HashMap<>( );
+	public String getMapTemplateWithDirectoryParam( HttpServletRequest request, int directoryId, String viewId )
+	{
+		Map<String, Object> model = new HashMap<>( );
 
-        // Récupération de la vue par défaut
-        View view = ViewHome.findByPrimaryKey( Integer.parseInt( AppPropertiesService.getProperty( GISMAP_DEFAULT_VIEW_PROPERTIES ) ) );
+		if ( StringUtils.isEmpty( viewId ) )
+		{
+			return "<span>" + I18nService.getLocalizedString( UNAVAILABILITY_MESSAGE, Locale.FRENCH ) + "</span>";
+		}
 
-        // Récupération des paramètres définissant l’affichage du flux GEOJSON de la vue du directory
-        View viewDirectory = ViewHome.findByPrimaryKey( Integer.parseInt( viewId ) );
-        String paramGeojson = viewDirectory.getMapParameter( ).getParameters( PARAM_VIEW_GEOJSON1 );
-        String paramThematicSimple = viewDirectory.getMapParameter( ).getParameters( PARAM_VIEW_THEMATICSIMPLE1 );
-        String paramPopup = viewDirectory.getMapParameter( ).getParameters( PARAM_VIEW_POPUP1 );
-        String paramShowlink = viewDirectory.getMapParameter( ).getParameters( PARAM_VIEW_SHOWLINK );
+		// Récupération de la vue par défaut
+		View view = ViewHome.findByPrimaryKey( Integer.parseInt( AppPropertiesService.getProperty( GISMAP_DEFAULT_VIEW_PROPERTIES ) ) );
 
-        // Ajout de la couche GeoJSON du directory
-        MapParameter tmp = view.getMapParameter( );
-        tmp.setParameters( PARAM_VIEW_URLGEOJSON, "'" + AppPathService.getBaseUrl( request ) + GISMAP_URL_REST + GismapDirectoryUtils.getRecordField( directoryId ) + "'" );
-        tmp.setParameters( PARAM_VIEW_GEOJSON1, paramGeojson );
-        tmp.setParameters( PARAM_VIEW_THEMATICSIMPLE1, paramThematicSimple );
+		// Récupération des paramètres définissant l’affichage du flux GEOJSON de la vue du directory
+		View viewDirectory = ViewHome.findByPrimaryKey( Integer.parseInt( viewId ) );
+			
+			String paramGeojson = viewDirectory.getMapParameter( ).getParameters( PARAM_VIEW_GEOJSON1 );
+			String paramThematicSimple = viewDirectory.getMapParameter( ).getParameters( PARAM_VIEW_THEMATICSIMPLE1 );
+			String paramPopup = viewDirectory.getMapParameter( ).getParameters( PARAM_VIEW_POPUP1 );
+			String paramShowlink = viewDirectory.getMapParameter( ).getParameters( PARAM_VIEW_SHOWLINK );
 
-        if ( paramPopup != null )
-        {
-            tmp.setParameters( PARAM_VIEW_POPUP1, paramPopup );
-        }
+			// Ajout de la couche GeoJSON du directory
+			MapParameter tmp = view.getMapParameter( );
+			tmp.setParameters( PARAM_VIEW_URLGEOJSON, "'" + AppPathService.getBaseUrl( request ) + GISMAP_URL_REST + GismapDirectoryUtils.getRecordField( directoryId ) + "'" );
+			tmp.setParameters( PARAM_VIEW_GEOJSON1, paramGeojson );
+			tmp.setParameters( PARAM_VIEW_THEMATICSIMPLE1, paramThematicSimple );
 
-        if ( paramShowlink != null )
-        {
-            tmp.setParameters( PARAM_VIEW_SHOWLINK, paramShowlink );
-        }
+			if ( paramPopup != null )
+			{
+				tmp.setParameters( PARAM_VIEW_POPUP1, paramPopup );
+			}
 
-        tmp.setParameters( PARAM_VIEW_THEMATICSIMPLE1, paramThematicSimple );
+			if ( paramShowlink != null )
+			{
+				tmp.setParameters( PARAM_VIEW_SHOWLINK, paramShowlink );
+			}
 
-        view.setMapParameter( tmp );
+			tmp.setParameters( PARAM_VIEW_THEMATICSIMPLE1, paramThematicSimple );
 
-        model.put( PARAMETER_MAP_PARAMETER, view.getMapParameter( ) );
-        model.put( PARAMETER_ADD_PARAMETER, view.getAddressParam( ) );
-        model.put( PARAMETER_DEFAULT_VIEW, directoryId );
+			view.setMapParameter( tmp );
 
-        Locale locale = ( request == null ) ? LocaleService.getDefault( ) : request.getLocale( );
-        HtmlTemplate templateList = AppTemplateService.getTemplate( view.getMapTemplateFile( ), locale, model );
+			model.put( PARAMETER_MAP_PARAMETER, view.getMapParameter( ) );
+			model.put( PARAMETER_ADD_PARAMETER, view.getAddressParam( ) );
+			model.put( PARAMETER_DEFAULT_VIEW, directoryId );
 
-        return templateList.getHtml( );
-    }
+			Locale locale = ( request == null ) ? LocaleService.getDefault( ) : request.getLocale( );
+			HtmlTemplate templateList = AppTemplateService.getTemplate( view.getMapTemplateFile( ), locale, model );
+
+			return templateList.getHtml( );
+		}
+
 }
