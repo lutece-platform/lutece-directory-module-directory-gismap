@@ -3,7 +3,7 @@
 
 <beans>
  	 <bean id="directory-gismap.mapProvider"  class="fr.paris.lutece.plugins.directory.modules.gismap.service.GismapProvider" />
- 	 <bean id="directory-gismap.ws"  class="fr.paris.lutece.plugins.directory.modules.gismap.business.RecordsResource" />
+ 	 <bean id="directory-gismap.ws"  class="fr.paris.lutece.plugins.directory.modules.gismap.web.rs.RecordsResourceRest" />
  	 <bean id="directory-gismap.directoryPortletDAO"  class="fr.paris.lutece.plugins.directory.modules.gismap.business.portlet.GismapDirectoryPortletDAO" />
  	 <bean id="directory-gismap.recordsResourceDAO"  class="fr.paris.lutece.plugins.directory.modules.gismap.business.RecordsResourceDAO" />
  	 
