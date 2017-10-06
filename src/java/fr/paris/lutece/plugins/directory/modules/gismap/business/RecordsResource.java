@@ -33,9 +33,7 @@
  */
 package fr.paris.lutece.plugins.directory.modules.gismap.business;
 
-import fr.paris.lutece.plugins.directory.business.Entry;
-import fr.paris.lutece.plugins.directory.business.EntryFilter;
-import fr.paris.lutece.plugins.directory.business.EntryHome;
+import fr.paris.lutece.plugins.directory.business.EntryTypeGeolocation;
 import fr.paris.lutece.plugins.directory.business.Field;
 import fr.paris.lutece.plugins.directory.business.FieldHome;
 import fr.paris.lutece.plugins.directory.business.IEntry;
@@ -54,9 +52,8 @@ import org.apache.commons.lang.StringUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 
 public class RecordsResource
@@ -72,9 +69,8 @@ public class RecordsResource
 	private static final String PARAMETER_DIRECTORY_ID = "id_directory=";
     
     
-    protected static final Plugin _DirectoryPlugin = DirectoryUtils.getPlugin( );
+    protected static final Plugin _directoryPlugin = DirectoryUtils.getPlugin( );
     
-    private static final String PROPERTY_ENTRY_TYPE_GEOLOCATION = "directory.entry_type.geolocation";
     
     private static boolean inProperties( String[] properties, String strProperty )
     {
@@ -111,78 +107,137 @@ public class RecordsResource
 
     
     
-    /** Build the GeoJSON webservice response from a list of RecordField identifiers.
+	/** Top-level method preparing the input parameters for building the GeoJSON webservice response. 
+     * 
+     * @param query The object containing query parameters
+     * 
+     * @return
+     */
+    public static String treatListRecordWS( RecordsResourceQuery query)
+    {
+    	String strIdEntryGeolocation = StringUtils.EMPTY;
+    	String strIdDirectory = StringUtils.EMPTY;
+    	String strIdRecordTab = StringUtils.EMPTY;
+    	List<Record> listRecord = null;
+    	Integer nIdGeolocationEntry = null;
+    	
+    	strIdEntryGeolocation = query.getIdGeolocationEntry();
+    	strIdDirectory = query.getIdDirectory();
+    	strIdRecordTab = query.getListIdRecord();
+    	 if ( StringUtils.isNotEmpty( strIdRecordTab ) )
+    			 {
+    		 listRecord = getRecordListFromStringParam( strIdRecordTab );
+    			 }
+    	 else
+    	 {
+    		if ( StringUtils.isNotEmpty( strIdDirectory ) )
+    		{
+    			listRecord = getRecordListFromDirectoryId( strIdDirectory );
+    		}
+    	 }
+    	 
+    	 if (StringUtils.isNotEmpty( strIdEntryGeolocation ) )
+    	 {
+    		 nIdGeolocationEntry = Integer.parseInt( strIdEntryGeolocation );
+    	 }
+    	
+    	return treatListRecordWS( nIdGeolocationEntry, listRecord);
+    }
+    
+    
+	/** Utility method to retrieve the full Record list from a comma-separated String
+	 * 
+	 * @param strIdRecordTab The comma-separated list of Record identifiers 
+	 * 
+	 * @return List of Records
+	 */
+    private static List<Record> getRecordListFromStringParam(String strIdRecordTab)
+    {
+    	List<Record> listRecord = new ArrayList<Record>( );
+    	String[] idRecordTab = strIdRecordTab.split(",");
+    	
+    	for ( int i = 0; i < idRecordTab.length; i++ )
+        {
+        Integer nIdRecord = Integer.parseInt( idRecordTab[i] );
+        Record record = RecordHome.findByPrimaryKey( nIdRecord, _directoryPlugin );
+        listRecord.add( record );
+        }
+
+		return listRecord;
+	}
+
+
+	/** Utility method to retrieve the full Record list of a given directory
+	 * 
+	 * @param strIdDirectory The directory identifier 
+	 * 
+	 * @return List of Records
+	 */
+	private static List<Record> getRecordListFromDirectoryId(String strIdDirectory)
+	{
+		List<Record> listRecord = null;
+		Integer nIdDirectory = Integer.parseInt( strIdDirectory );
+		RecordFieldFilter filter = new RecordFieldFilter( );
+		filter.setIdDirectory(nIdDirectory);
+		
+		listRecord = RecordHome.getListRecord(filter, _directoryPlugin);
+		
+		return listRecord;
+	}
+
+
+	/** Build the GeoJSON webservice response from a list of Record identifiers and a geolocation Entry identifier.
      * See GEOJSON specification: https://tools.ietf.org/html/rfc7946
      * 
-     * TODO: change the method signature in order to handle a geolocation Entry id and a list of Records Ids as input parameters
-     *  
-     * @param strListId The list of RecordField identifiers separated by commas
+     * @param listRecords The list of Record identifiers
+     * 
+     * @param nIdEntryGeolocation The Geolocation Entry identifier
      * 
      * @return The geoJSON response as a String
      */
-    public static String treatListRecordFieldsWS( String strListId )
-    {
-    	
-    	Integer[] idRecordTab = getRecordListFromRecordFieldList ( strListId);
-    	if ( idRecordTab.length == 0 )
-    	{
-    		return StringUtils.EMPTY;
-    	}
-    	
-    	// TODO : Handle several Geolocation entries inside a directory
-    	// and pass the idEntryGeolocation as WS input parameter
-    	Integer idEntryGeolocation = getGeolocationEntry ( idRecordTab[0] );
+    public static String treatListRecordWS( Integer nIdEntryGeolocation, List<Record> listRecords)
+    {  	
+    	 	
     	String strViewNumberValue = "";
         String strRMMSHOWCENTROIDProperty;
     	String strPopupShowLinkProperty;
     	String strPopup1Property;
     	
-        if ( idEntryGeolocation != null )
+        if ( listRecords != null && nIdEntryGeolocation != null)
         {
-            List<Field> fieldList = FieldHome.getFieldListByIdEntry( idEntryGeolocation,
-                    _DirectoryPlugin );
-            for ( Field field : fieldList )
-            {
-                if ( ( field != null ) && ( field.getTitle(  ) != null ) &&
-                        ( field.getTitle(  ).compareTo( "viewNumberGes" ) == 0 ) )
-                {
-                    strViewNumberValue = field.getValue(  );
-                    break;
-                }
-            }
-        }    	
-        strRMMSHOWCENTROIDProperty = getShowCentroidProperty(strViewNumberValue);    	
-        strPopupShowLinkProperty = getPopupShowLinkProperty(strViewNumberValue);
-        strPopup1Property = getPopup1Property(strViewNumberValue);
+        	
+	        strViewNumberValue = getViewNumber(nIdEntryGeolocation);    	
+	        strRMMSHOWCENTROIDProperty = getShowCentroidProperty(strViewNumberValue);    	
+	        strPopupShowLinkProperty = getPopupShowLinkProperty(strViewNumberValue);
+	        strPopup1Property = getPopup1Property(strViewNumberValue);
+	
+	        String[] strPopup1PropertyArray = strPopup1Property.split( "," );
+	        String[] strProperties = null;
+	
+	        if ( strPopup1PropertyArray.length > 1 )
+	        {
+	            strProperties = getBestProperties( strPopup1PropertyArray[1] ).split( ";" );
+	        }
+	        
+	        JSONObject collection = new JSONObject(  );
+	        collection.accumulate( "type", "FeatureCollection" );
+	
+	        JSONArray array = new JSONArray(  );
 
-        String[] strrPopup1PropertyArray = strPopup1Property.split( "," );
-        String[] strProperties = null;
 
-        if ( strrPopup1PropertyArray.length > 1 )
-        {
-            strProperties = getBestProperties( strrPopup1PropertyArray[1] ).split( ";" );
-        }
-        
-        JSONObject collection = new JSONObject(  );
-        collection.accumulate( "type", "FeatureCollection" );
-
-        JSONArray array = new JSONArray(  );
-
-        if ( idRecordTab != null )
-        {
-            for ( int i = 0; i < idRecordTab.length; i++ )
+            for ( Record record : listRecords )
             {
                 String strRecordFieldGeometry = "";
                 String strRecordFieldX = "";
                 String strRecordFieldY = "";
                 JSONObject properties = new JSONObject(  );
             	
-                int nIdRecord = idRecordTab[i];
-                Record record = RecordHome.findByPrimaryKey( nIdRecord, _DirectoryPlugin );
+
+                Integer nIdRecord = record.getIdRecord( );
                 
                 RecordFieldFilter rfFilter = new RecordFieldFilter( );
                 rfFilter.setIdRecord( nIdRecord ); 
-                List<RecordField> listRecordFields = RecordFieldHome.getRecordFieldList(rfFilter, _DirectoryPlugin);
+                List<RecordField> listRecordFields = RecordFieldHome.getRecordFieldList(rfFilter, _directoryPlugin);
                 
                 for (RecordField recordField : listRecordFields )
                 {
@@ -193,15 +248,15 @@ public class RecordsResource
 
                          if ( field != null )
                 		 	{
-	                    	 	if ( field.getTitle(  ).compareTo( "geometry" ) == 0 ) 
+	                    	 	if ( field.getTitle(  ).compareTo( EntryTypeGeolocation.CONSTANT_GEOMETRY ) == 0 ) 
 			                         {
 			                             strRecordFieldGeometry = recordField.getValue(  );
 			                         }
-	                    	 	if ( field.getTitle(  ).compareTo( "X" ) == 0 )
+	                    	 	if ( field.getTitle(  ).compareTo( EntryTypeGeolocation.CONSTANT_X ) == 0 )
 			                         {
 			                             strRecordFieldX = recordField.getValue(  );
 			                         }
-	                    	 	if ( field.getTitle(  ).compareTo( "Y" ) == 0 )
+	                    	 	if ( field.getTitle(  ).compareTo( EntryTypeGeolocation.CONSTANT_Y ) == 0 )
 			                         {
 			                             strRecordFieldY = recordField.getValue(  );
 			                         }
@@ -238,10 +293,36 @@ public class RecordsResource
 	        {
 	            collection.accumulate( "features", array );
 	        }
+	        
+	        return  collection.toString(  );
         }
-
-        return  collection.toString(  );
+        else
+        {
+        	return StringUtils.EMPTY;
+        }
     }
+
+
+	private static String getViewNumber(Integer nIdEntryGeolocation)
+	{
+		
+		String strViewNumberValue = StringUtils.EMPTY;
+		if ( nIdEntryGeolocation != null )
+        {
+            List<Field> fieldList = FieldHome.getFieldListByIdEntry( nIdEntryGeolocation,
+                    _directoryPlugin );
+            for ( Field field : fieldList )
+            {
+                if ( ( field != null ) && ( field.getTitle(  ) != null ) &&
+                        ( field.getTitle(  ).compareTo( EntryTypeGeolocation.CONSTANT_VIEW_NUMBER_GES ) == 0 ) )
+                {
+                    strViewNumberValue = field.getValue(  );
+                    break;
+                }
+            }
+        }
+		return strViewNumberValue;
+	}
 
     
 	/** Retrieve the popup1 property value from the provided gismap view number
@@ -326,54 +407,5 @@ public class RecordsResource
 		return strGeometry;
 	}
 
-	/**
-	 * Return the Identifier of the first Geolocation Entry inside a given DirectoryRecord
-	 * 
-	 * TODO : Remove this method and change the WS input parameter instead
-	 * 
-	 * @param identifier of DirectoryRecord
-	 * 
-	 * @return the geolocation entry identifier
-	 */
-	private static Integer getGeolocationEntry(Integer nIdDirectoryRecord) {
-		Record record = RecordHome.findByPrimaryKey(nIdDirectoryRecord, _DirectoryPlugin );
-		Integer nIdDirectory = record.getDirectory( ).getIdDirectory( );
-		
-		  EntryFilter filterGeolocation = new EntryFilter( );
-          filterGeolocation.setIdDirectory( nIdDirectory );
-          filterGeolocation.setIdType( AppPropertiesService.getPropertyInt( PROPERTY_ENTRY_TYPE_GEOLOCATION, 16 ) );
-          filterGeolocation.setIsShownInResultRecord( 1 );
-
-          List<IEntry> entriesGeolocationList = EntryHome.getEntryList( filterGeolocation, _DirectoryPlugin );
-          Entry geolocEntry = (Entry) entriesGeolocationList.get( 0 );
-          if (geolocEntry != null )
-          {
-        	  return geolocEntry.getIdEntry( );
-          }
-
-		return null;
-	}
-
-	/** Return an array of unique Record identifiers built from a list of RecordFields
-	 * 
-	 *  TODO : Remove this method and change the WS input parameter instead
-	 *  
-	 * @param strListIdRecordFields
-	 * 
-	 * @return array of Record Ids
-	 */
-	private static Integer[] getRecordListFromRecordFieldList(String strListIdRecordFields) {
-		String[] strListIdTab = ( strListIdRecordFields != null ) ? strListIdRecordFields.split( "," ) : null;
-		Set<Integer> hsRecordIdList = new HashSet<>();
-
-		for ( int i = 0; i < strListIdTab.length; i++ )
-		{
-			int nIdRecordField = Integer.parseInt( strListIdTab[i] );
-			RecordField recordField = RecordFieldHome.findByPrimaryKey(nIdRecordField, _DirectoryPlugin);
-			hsRecordIdList.add( recordField.getRecord().getIdRecord() );
-		}
-		Integer[] recordIdTab = hsRecordIdList.toArray( new Integer[hsRecordIdList.size( )]) ;
-		return recordIdTab;
-	}
     
 }

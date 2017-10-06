@@ -38,16 +38,21 @@ import java.util.List;
 
 import fr.paris.lutece.plugins.directory.business.Directory;
 import fr.paris.lutece.plugins.directory.business.DirectoryHome;
+import fr.paris.lutece.plugins.directory.business.Entry;
 import fr.paris.lutece.plugins.directory.business.EntryFilter;
 import fr.paris.lutece.plugins.directory.business.EntryHome;
 import fr.paris.lutece.plugins.directory.business.Field;
 import fr.paris.lutece.plugins.directory.business.IEntry;
+import fr.paris.lutece.plugins.directory.business.Record;
+import fr.paris.lutece.plugins.directory.business.RecordHome;
 import fr.paris.lutece.plugins.directory.modules.gismap.business.IRecordsResourceDAO;
 import fr.paris.lutece.plugins.directory.service.DirectoryPlugin;
 import fr.paris.lutece.plugins.gismap.business.IViewDAO;
 import fr.paris.lutece.plugins.gismap.service.GismapPlugin;
+import fr.paris.lutece.portal.service.plugin.Plugin;
 import fr.paris.lutece.portal.service.plugin.PluginService;
 import fr.paris.lutece.portal.service.spring.SpringContextService;
+import fr.paris.lutece.portal.service.util.AppPropertiesService;
 
 
 // TODO: Auto-generated Javadoc
@@ -57,7 +62,9 @@ import fr.paris.lutece.portal.service.spring.SpringContextService;
 public final class GismapDirectoryUtils
 {
 
-    /** The Constant GISMAP_VIEW. */
+    private static final Plugin _DirectoryPlugin = PluginService.getPlugin( DirectoryPlugin.PLUGIN_NAME );
+
+	/** The Constant GISMAP_VIEW. */
     public static final String GISMAP_VIEW      = "gismap.view.";
 
     /** The Constant GISMAP_PARAMETER. */
@@ -65,6 +72,8 @@ public final class GismapDirectoryUtils
 
     // Static variable pointed at the DAO instance
     private static IRecordsResourceDAO _dao = SpringContextService.getBean( "directory-gismap.recordsResourceDAO" );
+    
+    private static final String PROPERTY_ENTRY_TYPE_GEOLOCATION = "directory.entry_type.geolocation";
 
     /**
      * GismapUtils.
@@ -83,7 +92,7 @@ public final class GismapDirectoryUtils
     {
         String nbView = "";
 
-        Directory directory = DirectoryHome.findByPrimaryKey( directoryId, PluginService.getPlugin( DirectoryPlugin.PLUGIN_NAME ) );
+        Directory directory = DirectoryHome.findByPrimaryKey( directoryId, _DirectoryPlugin );
         EntryFilter filter = new EntryFilter( );
         filter.setIdDirectory( directory.getIdDirectory( ) );
         filter.setIsComment( EntryFilter.FILTER_FALSE );
@@ -91,7 +100,7 @@ public final class GismapDirectoryUtils
 
         List<IEntry> listEntry = new ArrayList<>( );
 
-        List<IEntry> listEntryFirstLevel = EntryHome.getEntryList( filter, PluginService.getPlugin( DirectoryPlugin.PLUGIN_NAME ) );
+        List<IEntry> listEntryFirstLevel = EntryHome.getEntryList( filter, _DirectoryPlugin );
 
         filter.setIsEntryParentNull( EntryFilter.ALL_INT );
 
@@ -99,16 +108,16 @@ public final class GismapDirectoryUtils
         {
             if ( !entry.getEntryType( ).getGroup( ) )
             {
-                listEntry.add( EntryHome.findByPrimaryKey( entry.getIdEntry( ), PluginService.getPlugin( DirectoryPlugin.PLUGIN_NAME ) ) );
+                listEntry.add( EntryHome.findByPrimaryKey( entry.getIdEntry( ), _DirectoryPlugin ) );
             }
 
             filter.setIdEntryParent( entry.getIdEntry( ) );
 
-            List<IEntry> listChildren = EntryHome.getEntryList( filter, PluginService.getPlugin( DirectoryPlugin.PLUGIN_NAME ) );
+            List<IEntry> listChildren = EntryHome.getEntryList( filter, _DirectoryPlugin );
 
             for ( IEntry entryChild : listChildren )
             {
-                listEntry.add( EntryHome.findByPrimaryKey( entryChild.getIdEntry( ), PluginService.getPlugin( DirectoryPlugin.PLUGIN_NAME ) ) );
+                listEntry.add( EntryHome.findByPrimaryKey( entryChild.getIdEntry( ), _DirectoryPlugin ) );
             }
         }
 
@@ -150,4 +159,34 @@ public final class GismapDirectoryUtils
         }
         return recordFields;
     }
+    
+	/**
+	 * Return the Identifier of the first Geolocation Entry inside a given DirectoryRecord
+	 * 
+	 * TODO : change the output parameter to List<Integer> to handle several geolocationEntries within a directory
+	 * 
+	 * @param identifier of DirectoryRecord
+	 * 
+	 * @return the geolocation entry identifier
+	 */
+	public static Integer getGeolocationEntry(Integer nIdDirectoryRecord) {
+		
+		Record record = RecordHome.findByPrimaryKey(nIdDirectoryRecord, _DirectoryPlugin );
+		Integer nIdDirectory = record.getDirectory( ).getIdDirectory( );
+		
+		  EntryFilter filterGeolocation = new EntryFilter( );
+          filterGeolocation.setIdDirectory( nIdDirectory );
+          filterGeolocation.setIdType( AppPropertiesService.getPropertyInt( PROPERTY_ENTRY_TYPE_GEOLOCATION, 16 ) );
+          filterGeolocation.setIsShownInResultRecord( 1 );
+
+          List<IEntry> entriesGeolocationList = EntryHome.getEntryList( filterGeolocation, _DirectoryPlugin );
+          Entry geolocEntry = (Entry) entriesGeolocationList.get( 0 );
+          if (geolocEntry != null )
+          {
+        	  return geolocEntry.getIdEntry( );
+          }
+
+		return null;
+	}
+    
 }

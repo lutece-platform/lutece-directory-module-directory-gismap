@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -60,6 +61,8 @@ import java.util.Locale;
  */
 public class GismapDirectoryService
 {
+	private static final String PARAM_ID_DIRECTORY = "idDirectory";
+
 	public static final String   GISMAP_DEFAULT_VIEW_PROPERTIES = "gismap.mainmap.defaultview";
 
 	// Markers
@@ -72,12 +75,13 @@ public class GismapDirectoryService
 	private static GismapDirectoryService _singleton                     = new GismapDirectoryService( );
 
 	// Constant
-	public static final String   GISMAP_URL_REST                = "rest/directory-gismap/listRecordField/";
+	public static final String   GISMAP_URL_REST                = "rest/directory-gismap/listRecord";
 	public static final String   PARAM_VIEW_URLGEOJSON          = "UrlGeoJSON1";
 	public static final String   PARAM_VIEW_GEOJSON1            = "GeoJSON1";
 	public static final String   PARAM_VIEW_THEMATICSIMPLE1     = "ThematicSimple1";
 	public static final String   PARAM_VIEW_POPUP1              = "Popup1";
 	public static final String   PARAM_VIEW_SHOWLINK            = "Popup_ShowLink";
+	public static final String   PARAM_ID_GEOLOCATION_ENTRY     = "idGeolocationEntry";
 
 	//MESSAGES
     private static final String UNAVAILABILITY_MESSAGE = "module.directory.gismap.message.portlet.unavailable.view.misconfiguration";
@@ -123,7 +127,14 @@ public class GismapDirectoryService
 
 			// Ajout de la couche GeoJSON du directory
 			MapParameter tmp = view.getMapParameter( );
-			tmp.setParameters( PARAM_VIEW_URLGEOJSON, "'" + AppPathService.getBaseUrl( request ) + GISMAP_URL_REST + GismapDirectoryUtils.getRecordField( directoryId ) + "'" );
+			
+			String strIdGeolocationEntry = String.valueOf( GismapDirectoryUtils.getGeolocationEntry( directoryId ) );
+			String strWSUrl = AppPathService.getBaseUrl( request ) + GISMAP_URL_REST;
+			String strWSUrlWithParams = UriBuilder.fromUri(strWSUrl)
+					.queryParam(PARAM_ID_GEOLOCATION_ENTRY, strIdGeolocationEntry)
+					.queryParam(PARAM_ID_DIRECTORY, String.valueOf(directoryId ) ).build( ).toString( );
+			
+			tmp.setParameters( PARAM_VIEW_URLGEOJSON, "'" + strWSUrlWithParams+ "'" );
 			tmp.setParameters( PARAM_VIEW_GEOJSON1, paramGeojson );
 			tmp.setParameters( PARAM_VIEW_THEMATICSIMPLE1, paramThematicSimple );
 

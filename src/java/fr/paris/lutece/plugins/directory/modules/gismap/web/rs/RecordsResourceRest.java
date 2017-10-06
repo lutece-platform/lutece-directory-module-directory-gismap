@@ -33,13 +33,15 @@
  */
 package fr.paris.lutece.plugins.directory.modules.gismap.web.rs;
 
+import fr.paris.lutece.plugins.directory.modules.gismap.business.RecordsResourceQuery;
 import fr.paris.lutece.plugins.directory.modules.gismap.business.RecordsResource;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 
@@ -48,20 +50,27 @@ public class RecordsResourceRest
 {
 
 	@GET
-	@Path( "listRecordField/{listId}" )
+	@Path( "listRecord" )
 	@Produces( MediaType.APPLICATION_JSON )
-	public String getListRecordFieldGetMehod( @PathParam( "listId" )
-	String strListId )
+	public String getListRecordFieldGetMehod(
+			@QueryParam( "idGeolocationEntry" ) String strIdGeolocationEntry,
+			@QueryParam( "idDirectory" ) String strIdDirectory,
+			@QueryParam( "listIdRecord" ) String strListIdRecord
+			)
 	{
-		return "callback(" + RecordsResource.treatListRecordFieldsWS( strListId ) + ")";
+		RecordsResourceQuery query = new RecordsResourceQuery( strIdGeolocationEntry, strIdDirectory, strListIdRecord);
+		
+		return "callback(" + RecordsResource.treatListRecordWS( query ) + ")";
 	}
+	
 
 	@POST
-	@Path( "listRecordField/post" )
+	@Path( "listRecord/post" )
 	@Produces( MediaType.APPLICATION_JSON )
-	public String getListRecordFieldPostMethod( String strListId )
+	@Consumes( MediaType.APPLICATION_JSON)
+	public String getListRecordFieldPostMethod( RecordsResourceQuery query)
 	{
-		return "callback(" + RecordsResource.treatListRecordFieldsWS( strListId ) + ")";
+		return "callback(" + RecordsResource.treatListRecordWS( query ) + ")";
 	}
 
 }

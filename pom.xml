@@ -27,10 +27,10 @@
         </repository>
 	</repositories>
 	<dependencies>
-		<dependency>
+ 		<dependency>
 			<groupId>fr.paris.lutece.plugins</groupId>
 			<artifactId>plugin-directory</artifactId>
-			<version>[4.0.7,)</version>
+			<version>[4.0.10-SNAPSHOT,)</version>
 			<type>lutece-plugin</type>
 		</dependency>
         <dependency>
