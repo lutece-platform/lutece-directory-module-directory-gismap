@@ -43,6 +43,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 
 @Path( "/rest/directory-gismap/" )
@@ -51,26 +52,31 @@ public class RecordsResourceRest
 
 	@GET
 	@Path( "listRecord" )
-	@Produces( MediaType.APPLICATION_JSON )
+	@Produces({"application/javascript"})
 	public String getListRecordFieldGetMehod(
 			@QueryParam( "idGeolocationEntry" ) String strIdGeolocationEntry,
 			@QueryParam( "idDirectory" ) String strIdDirectory,
-			@QueryParam( "listIdRecord" ) String strListIdRecord
+			@QueryParam( "listIdRecord" ) String strListIdRecord,
+			@QueryParam( "callback" ) String strCallback
 			)
 	{
 		RecordsResourceQuery query = new RecordsResourceQuery( strIdGeolocationEntry, strIdDirectory, strListIdRecord);
+		String strResponse = RecordsResource.treatListRecordWS( query );
 		
-		return "callback(" + RecordsResource.treatListRecordWS( query ) + ")";
+		return strCallback + "(" + strResponse + ")";
 	}
 	
 
 	@POST
 	@Path( "listRecord/post" )
-	@Produces( MediaType.APPLICATION_JSON )
+	@Produces({"application/javascript"})
 	@Consumes( MediaType.APPLICATION_JSON)
-	public String getListRecordFieldPostMethod( RecordsResourceQuery query)
+	public String getListRecordFieldPostMethod( RecordsResourceQuery query, @QueryParam( "callback" ) String strCallback)
 	{
-		return "callback(" + RecordsResource.treatListRecordWS( query ) + ")";
+		String strResponse = RecordsResource.treatListRecordWS( query );
+				
+		//return Response.ok(strResponse, MediaType.APPLICATION_JSON).build( );
+		return strCallback +"(" + strResponse + ");";
 	}
 
 }
