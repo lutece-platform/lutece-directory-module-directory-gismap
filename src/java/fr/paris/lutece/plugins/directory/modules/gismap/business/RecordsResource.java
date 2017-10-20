@@ -47,6 +47,7 @@ import fr.paris.lutece.portal.service.plugin.Plugin;
 import fr.paris.lutece.portal.service.util.AppLogService;
 import fr.paris.lutece.portal.service.util.AppPropertiesService;
 
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 
 import net.sf.json.JSONArray;
@@ -62,11 +63,12 @@ public class RecordsResource
 	private static final String GISMAP_VIEW = "gismap.view.";
 	private static final String PARAMETER = ".parameter.";
 	private static final String POPUPSHOWLINK = "Popup_ShowLink";
-	private static final String POPUP1 = "Popup1";
+	private static final String POPUP = "Popup";
 	private static final String RMMSHOWCENTROID = "RenderMapManagement.ShowCentroid";
 	private static final String URL_DIRECTORY_RECORD_DETAIL = "jsp/admin/plugins/directory/DoVisualisationRecord.jsp?";
 	private static final String PARAMETER_DIRECTORY_RECORD_ID = "id_directory_record=";
 	private static final String PARAMETER_DIRECTORY_ID = "id_directory=";
+	private static final String KEY_GEOMETRY = "geometry";
     
     
     protected static final Plugin _directoryPlugin = DirectoryUtils.getPlugin( );
@@ -113,35 +115,30 @@ public class RecordsResource
      * 
      * @return
      */
-    public static String treatListRecordWS( RecordsResourceQuery query)
+    public static String treatListRecordWS( DirectoryGismapSourceQuery query)
     {
-    	String strIdEntryGeolocation = StringUtils.EMPTY;
-    	String strIdDirectory = StringUtils.EMPTY;
-    	String strIdRecordTab = StringUtils.EMPTY;
-    	List<Record> listRecord = null;
-    	Integer nIdGeolocationEntry = null;
+
+    	List<Record> listRecord = null;    	
+    	Integer nIdEntryGeolocation = query.getIdGeolocationEntry( );
+    	Integer nIdDirectory = query.getIdDirectory( );
+    	String strIdRecordTab = query.getListIdRecord( );
+    	int nGeoJsonIndex = query.getGeoJsonIndex( );
+    	String strGeoJsonIndex = (nGeoJsonIndex == 0) ? "1" : String.valueOf( nGeoJsonIndex );
+    	String strView = query.getView( );
     	
-    	strIdEntryGeolocation = query.getIdGeolocationEntry();
-    	strIdDirectory = query.getIdDirectory();
-    	strIdRecordTab = query.getListIdRecord();
     	 if ( StringUtils.isNotEmpty( strIdRecordTab ) )
     			 {
     		 listRecord = getRecordListFromStringParam( strIdRecordTab );
     			 }
     	 else
     	 {
-    		if ( StringUtils.isNotEmpty( strIdDirectory ) )
+    		if ( nIdDirectory != null )
     		{
-    			listRecord = getRecordListFromDirectoryId( strIdDirectory );
+    			listRecord = getRecordListFromDirectoryId( nIdDirectory );
     		}
     	 }
-    	 
-    	 if (StringUtils.isNotEmpty( strIdEntryGeolocation ) )
-    	 {
-    		 nIdGeolocationEntry = Integer.parseInt( strIdEntryGeolocation );
-    	 }
     	
-    	return treatListRecordWS( nIdGeolocationEntry, listRecord);
+    	return treatListRecordWS( nIdEntryGeolocation, listRecord, strGeoJsonIndex, strView);
     }
     
     
@@ -169,14 +166,13 @@ public class RecordsResource
 
 	/** Utility method to retrieve the full Record list of a given directory
 	 * 
-	 * @param strIdDirectory The directory identifier 
+	 * @param nIdDirectory The directory identifier 
 	 * 
 	 * @return List of Records
 	 */
-	private static List<Record> getRecordListFromDirectoryId(String strIdDirectory)
+	private static List<Record> getRecordListFromDirectoryId(Integer nIdDirectory)
 	{
 		List<Record> listRecord = null;
-		Integer nIdDirectory = Integer.parseInt( strIdDirectory );
 		RecordFieldFilter filter = new RecordFieldFilter( );
 		filter.setIdDirectory(nIdDirectory);
 		
@@ -186,37 +182,48 @@ public class RecordsResource
 	}
 
 
-	/** Build the GeoJSON webservice response from a list of Record identifiers and a geolocation Entry identifier.
+	/** Build the GeoJSON webservice response from a list of Record identifiers, a geolocation Entry identifier,
+	 * a Gismap View identifier and a Geojson source index.
      * See GEOJSON specification: https://tools.ietf.org/html/rfc7946
      * 
      * @param listRecords The list of Record identifiers
      * 
      * @param nIdEntryGeolocation The Geolocation Entry identifier
      * 
+     * @param strGeoJsonIndex The GeoJson source index within gismap view
+     * 
+     * @param strView The Gismap view identifier
+     * 
      * @return The geoJSON response as a String
      */
-    public static String treatListRecordWS( Integer nIdEntryGeolocation, List<Record> listRecords)
+    public static String treatListRecordWS( Integer nIdEntryGeolocation, List<Record> listRecords, String strGeoJsonIndex, String strView)
     {  	
-    	 	
-    	String strViewNumberValue = "";
-        String strRMMSHOWCENTROIDProperty;
-    	String strPopupShowLinkProperty;
-    	String strPopup1Property;
+        boolean bRMMSHOWCENTROIDProperty;
+        boolean bPopupShowLinkProperty;
+    	String strPopupProperty;
+    	
+    	strGeoJsonIndex = StringUtils.isEmpty( strGeoJsonIndex ) ? "1" : strGeoJsonIndex;
     	
         if ( listRecords != null && nIdEntryGeolocation != null)
         {
         	
-	        strViewNumberValue = getViewNumber(nIdEntryGeolocation);    	
-	        strRMMSHOWCENTROIDProperty = getShowCentroidProperty(strViewNumberValue);    	
-	        strPopupShowLinkProperty = getPopupShowLinkProperty(strViewNumberValue);
-	        strPopup1Property = getPopup1Property(strViewNumberValue);
+	        if (StringUtils.isEmpty( strView ) )
+	        {
+	        	// If view number is not provided
+	        	// let's retrieve it from geolocation entry ( viewNumberGes field) 
+	        	strView = getViewNumber(nIdEntryGeolocation);
+	        }
+        	    	
+	        bRMMSHOWCENTROIDProperty = getViewPropertyAsBoolean( RMMSHOWCENTROID , strView );    	
+	        bPopupShowLinkProperty = getViewPropertyAsBoolean( POPUPSHOWLINK , strView);
+	        strPopupProperty = getPopupProperty(strView, strGeoJsonIndex);
 	
-	        String[] strPopup1PropertyArray = strPopup1Property.split( "," );
+	        String[] strPopupPropertyArray = strPopupProperty.split( "," );
 	        String[] strProperties = null;
 	
-	        if ( strPopup1PropertyArray.length > 1 )
+	        if ( strPopupPropertyArray.length > 1 )
 	        {
-	            strProperties = getBestProperties( strPopup1PropertyArray[1] ).split( ";" );
+	            strProperties = getBestProperties( strPopupPropertyArray[1] ).split( ";" );
 	        }
 	        
 	        JSONObject collection = new JSONObject(  );
@@ -275,7 +282,7 @@ public class RecordsResource
                 jsonElement.accumulate( "type", "Feature" );
                 jsonElement.accumulate( "id", nIdRecord );
               
-                if ( strPopupShowLinkProperty.compareTo( "true" ) == 0 )
+                if ( bPopupShowLinkProperty )
                     {
                         properties.accumulate( "link", getLink( record ) );
                     }
@@ -284,7 +291,7 @@ public class RecordsResource
                 jsonElement.accumulate( "properties",properties );
 
 
-                jsonElement.accumulate( "geometry", getGeometry( strRMMSHOWCENTROIDProperty, strRecordFieldGeometry, strRecordFieldX, strRecordFieldY ) );
+                jsonElement.accumulate( "geometry", getGeometry( bRMMSHOWCENTROIDProperty, strRecordFieldGeometry, strRecordFieldX, strRecordFieldY ) );
 
                 array.add( jsonElement );
               }
@@ -329,18 +336,35 @@ public class RecordsResource
 	 * 
 	 * @param strViewNumberValue
 	 */
-	private static String getPopup1Property(String strViewNumberValue) {
-		String strPopup1Property = AppPropertiesService.getProperty( GISMAP_VIEW + strViewNumberValue + PARAMETER + POPUP1 );
+	private static String getPopupProperty(String strViewNumberValue, String strGeoJsonIndex) {
+		String strPopup1Property = AppPropertiesService.getProperty( GISMAP_VIEW + strViewNumberValue + PARAMETER + POPUP+ strGeoJsonIndex );
 
         if ( strPopup1Property == null )
         {
             strPopup1Property = "";
-            AppLogService.info( "Could not found the " + GISMAP_VIEW + strViewNumberValue + PARAMETER + POPUP1 +
+            AppLogService.info( "Could not found the " + GISMAP_VIEW + strViewNumberValue + PARAMETER + POPUP+ strGeoJsonIndex +
                 " property in the property file. Set to empty string" );
         }
         return strPopup1Property;
 	}
 
+	/** Retrieve a gismap view property as a boolean value
+	 * 
+	 * @param strViewNumberValue
+	 */
+	private static boolean getViewPropertyAsBoolean(String strPropertyName, String strViewNumberValue ) {
+		String strPropertyValue = AppPropertiesService.getProperty( GISMAP_VIEW + strViewNumberValue + PARAMETER +
+				strPropertyName );
+
+        if ( StringUtils.isEmpty( strPropertyValue ) )
+        {
+        	strPropertyValue = Boolean.FALSE.toString(  );
+            AppLogService.info( "Could not found the " + GISMAP_VIEW + strViewNumberValue + PARAMETER + strPropertyValue +
+                " property in the property file. Set to " + Boolean.FALSE.toString(  ) );
+        }
+        return BooleanUtils.toBoolean( strPropertyValue );
+	}
+	
 	/** Retrieve the popupShowLink property value from the provided gismap view number
 	 * 
 	 * @param strViewNumberValue
@@ -384,11 +408,10 @@ public class RecordsResource
 	 * 
 	 * @return the geometry node as a string
 	 */
-	private static String getGeometry(String strRMMSHOWCENTROIDProperty, String strRecordFieldGeometry, String strRecordFieldX, String strRecordFieldY) {
+	private static String getGeometry(boolean bRMMSHOWCENTROIDProperty, String strRecordFieldGeometry, String strRecordFieldX, String strRecordFieldY) {
 		
-		String strGeometry;
-        if ( ( strRMMSHOWCENTROIDProperty != null ) &&
-                ( strRMMSHOWCENTROIDProperty.compareTo( "true" ) == 0 ) )
+		String strGeometry = null;
+        if ( bRMMSHOWCENTROIDProperty )
         {
             JSONObject jsonCoordinates = new JSONObject(  );
             if ( !strRecordFieldX.isEmpty(  ) && !strRecordFieldY.isEmpty(  ) )
@@ -401,7 +424,11 @@ public class RecordsResource
         }
         else
         {
-        	strGeometry =  StringUtils.isBlank( strRecordFieldGeometry ) ? null : strRecordFieldGeometry ;
+        	JSONObject jsonGeometry = JSONObject.fromObject( strRecordFieldGeometry );
+        	if (jsonGeometry.containsKey(KEY_GEOMETRY))
+        	{
+        		strGeometry = jsonGeometry.get(KEY_GEOMETRY).toString( );
+        	}
 
         }
 		return strGeometry;

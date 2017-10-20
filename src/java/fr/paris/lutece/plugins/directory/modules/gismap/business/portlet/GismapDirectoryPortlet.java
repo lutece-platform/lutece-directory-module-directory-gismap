@@ -33,14 +33,17 @@
  */
 package fr.paris.lutece.plugins.directory.modules.gismap.business.portlet;
 
+import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.BooleanUtils;
 
+import fr.paris.lutece.plugins.directory.modules.gismap.business.DirectoryGismapSourceQuery;
 import fr.paris.lutece.plugins.directory.modules.gismap.service.GismapDirectoryService;
-import fr.paris.lutece.plugins.directory.modules.gismap.utils.GismapDirectoryUtils;
 import fr.paris.lutece.portal.business.portlet.Portlet;
 import fr.paris.lutece.portal.business.portlet.PortletHome;
+import fr.paris.lutece.portal.service.util.AppPropertiesService;
 import fr.paris.lutece.util.xml.XmlUtil;
 
 /**
@@ -54,12 +57,15 @@ public class GismapDirectoryPortlet extends Portlet
     private static final String TAG_GISMAP_PORTLET_CONTENT = "gismap-portlet-content";
 
     // ///////////////////////////////////////////////////////////////////////////////
-    private static final String JSP_DO_SUBMIT_FORM         = "jsp/site/Portal.jsp?page=form";
+    
+	public static final String   GISMAP_DEFAULT_VIEW_PROPERTIES = "gismap.mainmap.defaultview";
+	public static final String 	MAX_LAYER_GEOJSON_PROPERTY = "directory-gismap.portlet.maxLayerGeojson";
 
     // Constants
     private int                 _nPortletId;
-    private int                 _nDirectoryId;
     private int                 _nStatus;
+    private	int					_nview;
+	private List<DirectoryGismapSourceQuery> _listMapSource;
 
     /**
      * Sets the identifier of the portlet type to the value specified in the
@@ -79,7 +85,10 @@ public class GismapDirectoryPortlet extends Portlet
     public String getXml( HttpServletRequest request )
     {
     	GismapDirectoryPortlet portlet = ( GismapDirectoryPortlet ) PortletHome.findByPrimaryKey( getId( ) );
-    	String viewId = GismapDirectoryUtils.getNbViewByDirectoryId( portlet.getDirectoryId( ) );
+    	List<DirectoryGismapSourceQuery> listGeojsonSources = portlet.getListMapSource( );
+
+    	// TO DO : configure the view from the portlet admin
+    	String viewId = AppPropertiesService.getProperty( GISMAP_DEFAULT_VIEW_PROPERTIES );
 
     	StringBuffer strXml = new StringBuffer( );
     	XmlUtil.beginElement( strXml, TAG_GISMAP_PORTLET );
@@ -87,7 +96,7 @@ public class GismapDirectoryPortlet extends Portlet
     	{
     		XmlUtil.addElementHtml( strXml, TAG_GISMAP_PORTLET_CONTENT, "<h3>" + portlet.getName( ) + "</h3>" );
     	}
-    	XmlUtil.addElementHtml( strXml, TAG_GISMAP_PORTLET_CONTENT, GismapDirectoryService.getInstance( ).getMapTemplateWithDirectoryParam( request, portlet.getDirectoryId( ), viewId ) );
+    	XmlUtil.addElementHtml( strXml, TAG_GISMAP_PORTLET_CONTENT, GismapDirectoryService.getInstance( ).getMapTemplateWithDirectoryGismapSources(request, viewId, listGeojsonSources) );
 
     	XmlUtil.endElement( strXml, TAG_GISMAP_PORTLET );
 
@@ -143,25 +152,6 @@ public class GismapDirectoryPortlet extends Portlet
         _nPortletId = nPortletId;
     }
 
-    /**
-     * Returns the FormId
-     *
-     * @return The FormId
-     */
-    public int getDirectoryId( )
-    {
-        return _nDirectoryId;
-    }
-
-    /**
-     * Sets the FormId
-     *
-     * @param nFormId The nFormId
-     */
-    public void setDirectoryId( int nDirectoryId )
-    {
-        _nDirectoryId = nDirectoryId;
-    }
 
     /**
      * Returns the Status
@@ -184,4 +174,47 @@ public class GismapDirectoryPortlet extends Portlet
     {
         _nStatus = nStatus;
     }
+
+    /**
+     * Returns the map View
+     * @param _nview 
+     *
+     * @return The View
+     */
+	public int getView( )
+	{
+		// TODO Auto-generated method stub
+		return _nview;
+	}
+	
+    /**
+     * Sets the map View
+     * @param _nview 
+     *
+     */
+	public void setView( int nView )
+	{
+		_nview = nView;
+	}
+
+    /**
+     * getter for the List of MapSource
+     * @param listDirectoryGismapSource 
+     *
+     */
+	public List<DirectoryGismapSourceQuery> getListMapSource( )
+	{
+		return this._listMapSource;
+		
+	}
+	
+    /**
+     * Setter for the List of MapSource
+     * @param listDirectoryGismapSource 
+     *
+     */
+	public void setListMapSource(List<DirectoryGismapSourceQuery> listDirectoryGismapSource)
+	{
+		this._listMapSource = listDirectoryGismapSource;		
+	}
 }

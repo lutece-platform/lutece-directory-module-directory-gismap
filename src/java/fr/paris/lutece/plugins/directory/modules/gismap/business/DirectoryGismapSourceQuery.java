@@ -35,34 +35,31 @@ package fr.paris.lutece.plugins.directory.modules.gismap.business;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
-@XmlRootElement(name = "RecordsResourceQuery")
-public class RecordsResourceQuery {
+@XmlRootElement(name = "DirectoryGismapSourceQuery")
+public class DirectoryGismapSourceQuery {
 	
-	private String _idGeolocationEntry;
+	private int _idGeolocationEntry;
+	private String _geolocationEntryTitle;
 	private String _listIdRecord;
-	private String _idDirectory;
-	
-	
-	public RecordsResourceQuery(String idGeolocationEntry, String idDirectory, String listIdRecord) {
-		_idGeolocationEntry = idGeolocationEntry;
-		_idDirectory = idDirectory;
-		_listIdRecord = listIdRecord;
-	}
+	private int _idDirectory;
+	private String _directoryTitle;
+	private int _geoJsonIndex;
+	private String _view;
 
-	public RecordsResourceQuery() {
+	public DirectoryGismapSourceQuery() {
 	}
 
 	
 	@Override
 	public String toString() {
-		return "RecordResourceQuery [idGeolocationEntry=" + _idGeolocationEntry 
-				+ ", IdDirectory" + _idDirectory + ", listIdRecord=" + _listIdRecord + "]";
+		return "DirectoryGismapSourceQuery [idGeolocationEntry=" + _idGeolocationEntry 
+				+ ", IdDirectory=" + _idDirectory + ", listIdRecord=" + _listIdRecord + ", geoJsonIndex=" + _geoJsonIndex+ ", view="+ _view + "]";
 	}
 
 	/** Getter for idGeolocationEntry
 	 * @return idGeolocationEntry
 	 */
-	public String getIdGeolocationEntry() {
+	public int getIdGeolocationEntry() {
 		return _idGeolocationEntry;
 	}
 
@@ -70,14 +67,14 @@ public class RecordsResourceQuery {
 	/** Setter for idGeolocationEntry
 	 * @param idGeolocationEntry
 	 */
-	public void setIdGeolocationEntry(String idGeolocationEntry) {
+	public void setIdGeolocationEntry(int idGeolocationEntry) {
 		_idGeolocationEntry = idGeolocationEntry;
 	}
 
 	/** Getter for idDirectory
 	 * @return idDirectory
 	 */
-	public String getIdDirectory() {
+	public int getIdDirectory() {
 		return _idDirectory;
 	}
 
@@ -85,14 +82,14 @@ public class RecordsResourceQuery {
 	/** Setter for idDirectory
 	 * @param idDirectory
 	 */
-	public void setIdDirectory(String idDirectory) {
+	public void setIdDirectory(int idDirectory) {
 		_idDirectory = idDirectory;
 	}
 	
 	/** Getter for listIdRecord
 	 * @return listIdRecord
 	 */
-	public String getListIdRecord() {
+	public String getListIdRecord( ) {
 		return _listIdRecord;
 	}
 
@@ -101,6 +98,67 @@ public class RecordsResourceQuery {
 	 */
 	public void setListIdRecord(String listIdRecord) {
 		_listIdRecord = listIdRecord;
+	}
+
+	/** Getter for geoJsonIndex
+	 * @return geoJsonIndex
+	 */
+	public int getGeoJsonIndex( ) {
+		return _geoJsonIndex;
+	}
+	
+	/** Setter for geoJsonIndex
+	 * @param geoJsonIndex
+	 */
+	public void setGeoJsonIndex(int geoJsonIndex) {
+		_geoJsonIndex = geoJsonIndex;
+		
+	}
+
+	/** Getter for view
+	 * @return _view
+	 */
+	public String getView() {
+		return _view;
+	}
+
+	/** Setter for view
+	 * @param strView
+	 */
+	public void setView(String strView) {
+		this._view = strView;
+	}
+
+
+	/** Getter for geolocationEntryTitle
+	 * @return _geolocationEntryTitle
+	 */
+	public String getGeolocationEntryTitle() {
+		return _geolocationEntryTitle;
+	}
+
+
+	/** Setter for geolocationEntryTitle
+	 * @param geolocationEntryTitle
+	 */
+	public void setGeolocationEntryTitle(String geolocationEntryTitle) {
+		this._geolocationEntryTitle = geolocationEntryTitle;
+	}
+
+
+	/** Getter for directoryTitle
+	 * @return _directoryTitle
+	 */
+	public String getDirectoryTitle() {
+		return _directoryTitle;
+	}
+
+
+	/** Setter for directoryTitle
+	 * @param directoryTitle
+	 */
+	public void setDirectoryTitle(String directoryTitle) {
+		this._directoryTitle = directoryTitle;
 	}
 
 }

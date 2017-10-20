@@ -1,8 +1,15 @@
-<div class="form-group">
-    <label class="control-label col-xs-12 col-sm-12 col-md-3 col-lg-3 col-xs-12 col-sm-12 col-md-3" for="id_form">#i18n{gismap.listDirectory.labelDirectory} * :</label>
-    <div class="col-xs-12 col-sm-12 col-md-6">
-    	<#if directory_list?exists>
-        <@combo name="id_directory" items=directory_list default_value=directory_id />
-        </#if>
-    </div>   	  
-</div>
+
+	<@columns>
+		<@formGroup formStyle='horizontal' labelFor='map_view_id' labelKey='#i18n{module.directory.gismap.label.view} :' showLabel=true>
+			<@input type='text' name='map_view_id' id='map_view_id' value='${map_view_id}' inputSize=3 maxlength=3 />
+		</@formGroup>
+		<@formGroup formStyle='inline' labelFor='title' labelKey='#i18n{module.directory.gismap.label.listDirectory.labelSelectDirectory} :' showLabel=true>
+			<#list 1..maxLayerNumber as map_source >
+			<#assign geojsonIndex = "GeoJSON${map_source}">
+				
+				<@formGroup labelKey=geojsonIndex labelFor=geojsonIndex>
+					<@select id=geojsonIndex name=geojsonIndex default_value='${geojsonIndex?eval}' size=sm items=directory_list />
+				</@formGroup>
+			</#list>
+		</@formGroup>
+	</@columns>

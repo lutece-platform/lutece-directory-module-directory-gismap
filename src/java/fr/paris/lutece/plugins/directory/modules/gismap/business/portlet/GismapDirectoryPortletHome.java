@@ -33,8 +33,6 @@
  */
 package fr.paris.lutece.plugins.directory.modules.gismap.business.portlet;
 
-import fr.paris.lutece.plugins.gismap.business.View;
-import fr.paris.lutece.plugins.gismap.business.ViewHome;
 import fr.paris.lutece.portal.business.portlet.IPortletInterfaceDAO;
 import fr.paris.lutece.portal.business.portlet.PortletHome;
 import fr.paris.lutece.portal.business.portlet.PortletTypeHome;
@@ -103,15 +101,4 @@ public class GismapDirectoryPortletHome extends PortletHome
         return _dao;
     }
 
-    /**
-     * Gets the view by portlet id.
-     *
-     * @param nPortletId the n portlet id
-     * @return the view by portlet id
-     */
-    public static View getViewByPortletId( int nPortletId )
-    {
-        GismapDirectoryPortlet formPortlet = ( GismapDirectoryPortlet ) _dao.load( nPortletId );
-        return ViewHome.findByPrimaryKey( formPortlet.getDirectoryId( ) );
-    }
 }

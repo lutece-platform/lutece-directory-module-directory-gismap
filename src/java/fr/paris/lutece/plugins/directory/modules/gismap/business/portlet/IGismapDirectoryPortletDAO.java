@@ -40,4 +40,5 @@ import fr.paris.lutece.portal.business.portlet.IPortletInterfaceDAO;
  */
 public interface IGismapDirectoryPortletDAO extends IPortletInterfaceDAO
 {
+
 }

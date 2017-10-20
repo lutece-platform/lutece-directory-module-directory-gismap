@@ -33,7 +33,7 @@
  */
 package fr.paris.lutece.plugins.directory.modules.gismap.web.rs;
 
-import fr.paris.lutece.plugins.directory.modules.gismap.business.RecordsResourceQuery;
+import fr.paris.lutece.plugins.directory.modules.gismap.business.DirectoryGismapSourceQuery;
 import fr.paris.lutece.plugins.directory.modules.gismap.business.RecordsResource;
 
 import javax.ws.rs.Consumes;
@@ -43,7 +43,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+
+import org.apache.commons.lang.StringUtils;
 
 
 @Path( "/rest/directory-gismap/" )
@@ -57,10 +58,30 @@ public class RecordsResourceRest
 			@QueryParam( "idGeolocationEntry" ) String strIdGeolocationEntry,
 			@QueryParam( "idDirectory" ) String strIdDirectory,
 			@QueryParam( "listIdRecord" ) String strListIdRecord,
+			@QueryParam( "geoJsonIndex" ) String strGeoJsonIndex,
 			@QueryParam( "callback" ) String strCallback
 			)
 	{
-		RecordsResourceQuery query = new RecordsResourceQuery( strIdGeolocationEntry, strIdDirectory, strListIdRecord);
+		DirectoryGismapSourceQuery query = new DirectoryGismapSourceQuery( );
+		if (StringUtils.isNotEmpty( strIdGeolocationEntry ) )
+		{
+			Integer idGeolocationEntry = Integer.parseInt( strIdGeolocationEntry );
+			query.setIdGeolocationEntry( idGeolocationEntry );
+		}
+
+		if (StringUtils.isNotEmpty( strIdDirectory ) )
+		{
+			Integer idDirectory = Integer.parseInt( strIdDirectory );
+			query.setIdDirectory(idDirectory);
+		}
+		query.setListIdRecord(strListIdRecord);
+		
+		if (StringUtils.isNotEmpty( strGeoJsonIndex ) )
+		{
+			Integer idDirectory = Integer.parseInt( strGeoJsonIndex );
+					query.setGeoJsonIndex( idDirectory );
+		}
+
 		String strResponse = RecordsResource.treatListRecordWS( query );
 		
 		return strCallback + "(" + strResponse + ")";
@@ -71,11 +92,10 @@ public class RecordsResourceRest
 	@Path( "listRecord/post" )
 	@Produces({"application/javascript"})
 	@Consumes( MediaType.APPLICATION_JSON)
-	public String getListRecordFieldPostMethod( RecordsResourceQuery query, @QueryParam( "callback" ) String strCallback)
+	public String getListRecordFieldPostMethod( DirectoryGismapSourceQuery query, @QueryParam( "callback" ) String strCallback)
 	{
 		String strResponse = RecordsResource.treatListRecordWS( query );
 				
-		//return Response.ok(strResponse, MediaType.APPLICATION_JSON).build( );
 		return strCallback +"(" + strResponse + ");";
 	}
 

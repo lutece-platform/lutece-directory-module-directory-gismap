@@ -43,15 +43,9 @@ import fr.paris.lutece.plugins.directory.business.EntryFilter;
 import fr.paris.lutece.plugins.directory.business.EntryHome;
 import fr.paris.lutece.plugins.directory.business.Field;
 import fr.paris.lutece.plugins.directory.business.IEntry;
-import fr.paris.lutece.plugins.directory.business.Record;
-import fr.paris.lutece.plugins.directory.business.RecordHome;
-import fr.paris.lutece.plugins.directory.modules.gismap.business.IRecordsResourceDAO;
 import fr.paris.lutece.plugins.directory.service.DirectoryPlugin;
-import fr.paris.lutece.plugins.gismap.business.IViewDAO;
-import fr.paris.lutece.plugins.gismap.service.GismapPlugin;
 import fr.paris.lutece.portal.service.plugin.Plugin;
 import fr.paris.lutece.portal.service.plugin.PluginService;
-import fr.paris.lutece.portal.service.spring.SpringContextService;
 import fr.paris.lutece.portal.service.util.AppPropertiesService;
 
 
@@ -70,8 +64,6 @@ public final class GismapDirectoryUtils
     /** The Constant GISMAP_PARAMETER. */
     public static final String GISMAP_PARAMETER = ".parameter";
 
-    // Static variable pointed at the DAO instance
-    private static IRecordsResourceDAO _dao = SpringContextService.getBean( "directory-gismap.recordsResourceDAO" );
     
     private static final String PROPERTY_ENTRY_TYPE_GEOLOCATION = "directory.entry_type.geolocation";
 
@@ -137,42 +129,17 @@ public final class GismapDirectoryUtils
         return nbView;
     }
 
-    /**
-     * Gets the record field.
-     *
-     * @param directoryId the directory id
-     * @return the record field
-     */
-    public static String getRecordField( int directoryId )
-    {
-        String recordFields = "";
-        List<String> listRecordField = _dao.findListRecordField( directoryId );
-        for ( String recordField : listRecordField )
-        {
-            if ( "".equals( recordFields ) )
-            {
-                recordFields = recordField;
-            } else
-            {
-                recordFields += "," + recordField;
-            }
-        }
-        return recordFields;
-    }
     
 	/**
-	 * Return the Identifier of the first Geolocation Entry inside a given DirectoryRecord
+	 * Return the Identifier of the first Geolocation Entry inside a given Directory
 	 * 
 	 * TODO : change the output parameter to List<Integer> to handle several geolocationEntries within a directory
 	 * 
-	 * @param identifier of DirectoryRecord
+	 * @param identifier of Directory
 	 * 
 	 * @return the geolocation entry identifier
 	 */
-	public static Integer getGeolocationEntry(Integer nIdDirectoryRecord) {
-		
-		Record record = RecordHome.findByPrimaryKey(nIdDirectoryRecord, _DirectoryPlugin );
-		Integer nIdDirectory = record.getDirectory( ).getIdDirectory( );
+	public static Integer getGeolocationEntry(Integer nIdDirectory) {
 		
 		  EntryFilter filterGeolocation = new EntryFilter( );
           filterGeolocation.setIdDirectory( nIdDirectory );

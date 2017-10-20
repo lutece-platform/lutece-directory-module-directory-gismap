@@ -33,6 +33,7 @@
  */
 package fr.paris.lutece.plugins.directory.modules.gismap.web.portlet;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
@@ -48,6 +49,7 @@ import fr.paris.lutece.plugins.directory.business.Field;
 import fr.paris.lutece.plugins.directory.business.FieldHome;
 import fr.paris.lutece.plugins.directory.business.IEntry;
 import fr.paris.lutece.plugins.directory.business.Directory;
+import fr.paris.lutece.plugins.directory.modules.gismap.business.DirectoryGismapSourceQuery;
 import fr.paris.lutece.plugins.directory.modules.gismap.business.portlet.GismapDirectoryPortlet;
 import fr.paris.lutece.plugins.directory.modules.gismap.business.portlet.GismapDirectoryPortletHome;
 import fr.paris.lutece.plugins.directory.modules.gismap.service.GismapProvider;
@@ -60,6 +62,7 @@ import fr.paris.lutece.portal.service.message.AdminMessageService;
 import fr.paris.lutece.portal.service.plugin.Plugin;
 import fr.paris.lutece.portal.service.plugin.PluginService;
 import fr.paris.lutece.portal.service.util.AppLogService;
+import fr.paris.lutece.portal.service.util.AppPropertiesService;
 import fr.paris.lutece.portal.web.portlet.PortletJspBean;
 import fr.paris.lutece.util.ReferenceList;
 import fr.paris.lutece.util.html.HtmlTemplate;
@@ -81,6 +84,7 @@ public class GismapDirectoryPortletJspBean extends PortletJspBean
     private static final String MARK_DIRECTORY_ID                 = "directory_id";
     private static final String PARAMETER_ID_DIRECTORY              = "id_directory";
     private static final String MESSAGE_YOU_MUST_CHOOSE_A_DIRECTORY = "module.directory.gismap.message.mandatory.directory";
+    private static final String PARAMETER_CLOSE_PAGE				= "close";
 
    
     private static final String JSP_ADMIN_SITE = "../../../../site/AdminSite.jsp";
@@ -92,7 +96,19 @@ public class GismapDirectoryPortletJspBean extends PortletJspBean
 	private static final String MESSAGE_ERROR_PLUGIN_DIRECTORY_DISABLED = "module.directory.gismap.message.plugin.directory.disabled";
 
 	private static final String MESSAGE_DIRECTORY_GEOLOCATION_MISCONFIG = "module.directory.gismap.message.directory.geolocation_misconfiguration";
-    
+
+	private static final String MESSAGE_YOU_MUST_ENTER_VIEW = "module.directory.gismap.message.mandatory.view";
+	
+	private static final String MARK_MAP_VIEW_ID = "map_view_id";
+
+	private static final String MARK_MAP_SOURCE_LIST = "map_source_list";
+	private static final String MARK_MAX_LAYER_NUMBER = "maxLayerNumber";
+
+	private static final String PARAMETER_MAP_VIEW_ID = "map_view_id";
+	private static final String PARAMETER_GEOJSON = "GeoJSON";
+
+
+
     // //////////////////////////////////////////////////////////////////////////
     // Class attributes
     
@@ -118,7 +134,17 @@ public class GismapDirectoryPortletJspBean extends PortletJspBean
         String strIdPortletType = request.getParameter( PARAMETER_PORTLET_TYPE_ID );
         		
         model.put( MARK_DIRECTORY_LIST, GetDirectoriesWithGeolocation( ) );
-        model.put( MARK_DIRECTORY_ID, 1);
+        model.put( MARK_MAP_VIEW_ID, StringUtils.EMPTY );
+        
+        String strMaxLayerGeojson = AppPropertiesService.getProperty( GismapDirectoryPortlet.MAX_LAYER_GEOJSON_PROPERTY, "1" );
+        int nMaxLayerGeojson = Integer.parseInt( strMaxLayerGeojson );        
+        
+        model.put( MARK_MAX_LAYER_NUMBER, nMaxLayerGeojson);
+        for (int i =0; i<=nMaxLayerGeojson; i++ )
+        {  
+        	model.put( PARAMETER_GEOJSON + String.valueOf( i ), "0" );
+        }  
+        
         HtmlTemplate template = getCreateTemplate( strIdPage, strIdPortletType, model );
 
         return template.getHtml( );
@@ -142,7 +168,7 @@ public class GismapDirectoryPortletJspBean extends PortletJspBean
         HashMap<String, Object> model = new HashMap<>( );
         String strPortletId = request.getParameter( PARAMETER_PORTLET_ID );
         int nPortletId = -1;
-        int nDirectoryId = -1;
+        int nViewId = 0;
 
         try
         {
@@ -153,17 +179,60 @@ public class GismapDirectoryPortletJspBean extends PortletJspBean
         }
 
         GismapDirectoryPortlet portlet = ( GismapDirectoryPortlet ) PortletHome.findByPrimaryKey( nPortletId );
-        nDirectoryId = portlet.getDirectoryId( );
+        nViewId = portlet.getView( );
+        List<DirectoryGismapSourceQuery> listPortletSources = portlet.getListMapSource( );
         
         model.put( MARK_DIRECTORY_LIST, GetDirectoriesWithGeolocation( ) );
-        model.put( MARK_DIRECTORY_ID, nDirectoryId);
+        model.put( MARK_MAP_VIEW_ID, nViewId);
+        
+        String strMaxLayerGeojson = AppPropertiesService.getProperty( GismapDirectoryPortlet.MAX_LAYER_GEOJSON_PROPERTY, "1" );
+        int nMaxLayerGeojson = Integer.parseInt( strMaxLayerGeojson );        
+        
+        model.put( MARK_MAX_LAYER_NUMBER, nMaxLayerGeojson);
+        boolean bfound;
+        
+        for (int i =1; i<=nMaxLayerGeojson; i++ )
+        {  
+        	bfound = false;
+        	
+        	for ( DirectoryGismapSourceQuery portletSource : listPortletSources)
+        	{
+        		if ( portletSource.getGeoJsonIndex( ) == i)
+        		{
+        			bfound = true;
+        			String strMapSourceKey = String.valueOf( portletSource.getIdDirectory( ) )
+        					.concat( "-" ).concat( String.valueOf( portletSource.getIdGeolocationEntry( ) ) );
+        			model.put( PARAMETER_GEOJSON + String.valueOf( i ), strMapSourceKey );
+        			
+        		}
+        	}
+        	if ( !bfound )
+        	{
+        		model.put( PARAMETER_GEOJSON + String.valueOf( i ), "0" );
+        	}        		        	
+        }  
+        
 
         HtmlTemplate template = getModifyTemplate( portlet, model );
 
         return template.getHtml( );
     }
 
-    /**
+    private void removeMapSourceFromPortlet(int nPortletId, String directoryMapSourceToRemove) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	private void addMapSourceToPortlet(int nPortletId, List<DirectoryGismapSourceQuery> listMapSources) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+
+
+
+	/**
      * Process portlet's creation
      *
      * @param request The Http request
@@ -173,26 +242,22 @@ public class GismapDirectoryPortletJspBean extends PortletJspBean
     public String doCreate( HttpServletRequest request )
     {
         GismapDirectoryPortlet portlet = new GismapDirectoryPortlet( );
-        String strPageId = request.getParameter( PARAMETER_PAGE_ID );
-        String strDirectoryId = request.getParameter( PARAMETER_ID_DIRECTORY );
+        String strPageId = request.getParameter( PARAMETER_PAGE_ID );        
+        
+        //String strView = AppPropertiesService.getProperty( GismapDirectoryPortlet.GISMAP_DEFAULT_VIEW_PROPERTIES );
+        String strView = request.getParameter( PARAMETER_MAP_VIEW_ID );
+        
         int nPageId = -1;
-        int nDirectoryId = -1;
+        int nView = -1;
+        List<DirectoryGismapSourceQuery> listDirectoryGismapSource = new ArrayList<DirectoryGismapSourceQuery>( );
 
         // get portlet common attributes
         String strErrorUrl = setPortletCommonData( request, portlet );
 
-        try
+        
+        if ( ( strErrorUrl == null ) && ( StringUtils.isEmpty( strView ) ) )
         {
-            nPageId = Integer.parseInt( strPageId );
-            nDirectoryId = Integer.parseInt( strDirectoryId );
-        } catch ( NumberFormatException ne )
-        {
-            AppLogService.error( ne );
-        }
-
-        if ( ( strErrorUrl == null ) && ( nDirectoryId == -1 ) )
-        {
-            strErrorUrl = AdminMessageService.getMessageUrl( request, MESSAGE_YOU_MUST_CHOOSE_A_DIRECTORY, AdminMessage.TYPE_STOP );
+            strErrorUrl = AdminMessageService.getMessageUrl( request, MESSAGE_YOU_MUST_ENTER_VIEW, AdminMessage.TYPE_STOP );
         }
 
         if ( strErrorUrl != null )
@@ -200,16 +265,61 @@ public class GismapDirectoryPortletJspBean extends PortletJspBean
             return strErrorUrl;
         }
 
+        try
+        {
+            nPageId = Integer.parseInt( strPageId );
+            nView = Integer.parseInt( strView );
+        } catch ( NumberFormatException ne )
+        {
+            AppLogService.error( ne );
+        }
+        
+        /*
         if (!CheckGeolocationParams( nDirectoryId ) )
         {
         	return AdminMessageService.getMessageUrl( request, MESSAGE_DIRECTORY_GEOLOCATION_MISCONFIG, AdminMessage.TYPE_STOP );
         }
+        */
         
         portlet.setPageId( nPageId );
-        portlet.setDirectoryId( nDirectoryId );
+        //portlet.setDirectoryId( nDirectoryId );
+        portlet.setView(nView);
 
+        
+        String strMaxLayerGeojson = AppPropertiesService.getProperty( GismapDirectoryPortlet.MAX_LAYER_GEOJSON_PROPERTY, "1" );
+        int nMaxLayerGeojson = Integer.parseInt( strMaxLayerGeojson );
+        
+        for (int i =0; i<=nMaxLayerGeojson; i++ )
+        {  
+        	String directoryMapSourceToAdd = request.getParameter( PARAMETER_GEOJSON + String.valueOf( i ) );
+	        if ( StringUtils.isNotEmpty( directoryMapSourceToAdd ) && !directoryMapSourceToAdd.equals( "0" ) )
+	        {
+	        	try
+	        	{
+	        	String strDirectoryId = directoryMapSourceToAdd.split("-")[0];
+	        	int nDirectoryId = Integer.parseInt( strDirectoryId );
+	        	String strGeolocationEntryId = directoryMapSourceToAdd.split("-")[1];
+	        	int nGeolocationEntryId = Integer.parseInt( strGeolocationEntryId );
+	        	
+	        	DirectoryGismapSourceQuery directoryGismapSource = new DirectoryGismapSourceQuery( );
+	        	directoryGismapSource.setIdDirectory( nDirectoryId );
+	        	directoryGismapSource.setIdGeolocationEntry( nGeolocationEntryId );
+	        	directoryGismapSource.setGeoJsonIndex( i );
+	        	
+	        	listDirectoryGismapSource.add( directoryGismapSource );
+	        	}
+	        	catch (NumberFormatException e)
+	        	{
+	        		AppLogService.error("An error occured while reading geojson"+i+" source parameters in GismapDirectoryPortlet creation.", e);
+	        	}
+	        }
+        }
+        
+        portlet.setListMapSource( listDirectoryGismapSource );
+        
         // Creating portlet
         GismapDirectoryPortletHome.getInstance( ).create( portlet );
+
 
         // Displays the page with the new Portlet
         return getPageUrl( nPageId );
@@ -226,27 +336,34 @@ public class GismapDirectoryPortletJspBean extends PortletJspBean
     {
         // recovers portlet attributes
         String strPortletId = request.getParameter( PARAMETER_PORTLET_ID );
-        String strDirectoryId = request.getParameter( PARAMETER_ID_DIRECTORY );
         int nPortletId = -1;
-        int nDirectoryId = -1;
 
         try
         {
             nPortletId = Integer.parseInt( strPortletId );
-            nDirectoryId = Integer.parseInt( strDirectoryId );
         } catch ( NumberFormatException ne )
         {
             AppLogService.error( ne );
         }
 
         GismapDirectoryPortlet portlet = ( GismapDirectoryPortlet ) PortletHome.findByPrimaryKey( nPortletId );
+        
+        String strPageId = request.getParameter( PARAMETER_PAGE_ID );        
+        
+        //String strView = AppPropertiesService.getProperty( GismapDirectoryPortlet.GISMAP_DEFAULT_VIEW_PROPERTIES );
+        String strView = request.getParameter( PARAMETER_MAP_VIEW_ID );
+        
+        int nPageId = -1;
+        int nView = -1;
+        List<DirectoryGismapSourceQuery> listDirectoryGismapSource = new ArrayList<DirectoryGismapSourceQuery>( );
 
-        // retrieve portlet common attributes
+        // get portlet common attributes
         String strErrorUrl = setPortletCommonData( request, portlet );
 
-        if ( ( strErrorUrl == null ) && ( nDirectoryId == -1 ) )
+        
+        if ( ( strErrorUrl == null ) && ( StringUtils.isEmpty( strView ) ) )
         {
-            strErrorUrl = AdminMessageService.getMessageUrl( request, MESSAGE_YOU_MUST_CHOOSE_A_DIRECTORY, AdminMessage.TYPE_STOP );
+            strErrorUrl = AdminMessageService.getMessageUrl( request, MESSAGE_YOU_MUST_ENTER_VIEW, AdminMessage.TYPE_STOP );
         }
 
         if ( strErrorUrl != null )
@@ -254,16 +371,63 @@ public class GismapDirectoryPortletJspBean extends PortletJspBean
             return strErrorUrl;
         }
 
+        try
+        {
+            nPageId = Integer.parseInt( strPageId );
+            nView = Integer.parseInt( strView );
+        } catch ( NumberFormatException ne )
+        {
+            AppLogService.error( ne );
+        }
+        
+        /*
         if (!CheckGeolocationParams( nDirectoryId ) )
         {
         	return AdminMessageService.getMessageUrl( request, MESSAGE_DIRECTORY_GEOLOCATION_MISCONFIG, AdminMessage.TYPE_STOP );
         }
-        portlet.setDirectoryId( nDirectoryId );
+        */
+        
+        portlet.setPageId( nPageId );
+        portlet.setView(nView);
+
+        
+        String strMaxLayerGeojson = AppPropertiesService.getProperty( GismapDirectoryPortlet.MAX_LAYER_GEOJSON_PROPERTY, "1" );
+        int nMaxLayerGeojson = Integer.parseInt( strMaxLayerGeojson );
+        
+        for (int i =0; i<=nMaxLayerGeojson; i++ )
+        {  
+        	String directoryMapSourceToAdd = request.getParameter( PARAMETER_GEOJSON + String.valueOf( i ) );
+	        if ( StringUtils.isNotEmpty( directoryMapSourceToAdd ) && !directoryMapSourceToAdd.equals( "0" ) )
+	        {
+	        	try
+	        	{
+	        	String strDirectoryId = directoryMapSourceToAdd.split("-")[0];
+	        	int nDirectoryId = Integer.parseInt( strDirectoryId );
+	        	String strGeolocationEntryId = directoryMapSourceToAdd.split("-")[1];
+	        	int nGeolocationEntryId = Integer.parseInt( strGeolocationEntryId );
+	        	
+	        	DirectoryGismapSourceQuery directoryGismapSource = new DirectoryGismapSourceQuery( );
+	        	directoryGismapSource.setIdDirectory( nDirectoryId );
+	        	directoryGismapSource.setIdGeolocationEntry( nGeolocationEntryId );
+	        	directoryGismapSource.setGeoJsonIndex( i );
+	        	
+	        	listDirectoryGismapSource.add( directoryGismapSource );
+	        	}
+	        	catch (NumberFormatException e)
+	        	{
+	        		AppLogService.error("An error occured while reading geojson"+i+" source parameters in GismapDirectoryPortlet creation.", e);
+	        	}
+	        }
+        }
+        
+        portlet.setListMapSource( listDirectoryGismapSource );
+        
         // updates the portlet
         portlet.update( );
 
-        // displays the page withe the potlet updated
-        return getPageUrl( portlet.getPageId( ) );
+    	// displays the page withe the potlet updated
+    	return getPageUrl( portlet.getPageId( ) );
+
     }
     
     
@@ -333,6 +497,7 @@ public class GismapDirectoryPortletJspBean extends PortletJspBean
     private ReferenceList GetDirectoriesWithGeolocation( )
     {
     	ReferenceList refDirectory = new ReferenceList( );
+    	refDirectory.addItem( "0", StringUtils.EMPTY );
     	
     	DirectoryFilter filter = new DirectoryFilter( );
     	filter.setIsDisabled( DirectoryFilter.FILTER_TRUE );    	
@@ -356,7 +521,8 @@ public class GismapDirectoryPortletJspBean extends PortletJspBean
 
             		if (entry.getMapProvider( )!= null && entry.getMapProvider( ).getClass( ).getName( ).equals( GISMAPPROVIDER_CLASSNAME)  )
             		{
-                		refDirectory.addItem( directory.getIdDirectory( ), directory.getTitle( ) );
+                		refDirectory.addItem( String.valueOf( directory.getIdDirectory( ) ).concat( "-" ).concat( String.valueOf( entry.getIdEntry( ) ) )
+                				, directory.getTitle( ).concat( " - " ).concat( entry.getTitle( ) ) );
                 		break;
             		}
 

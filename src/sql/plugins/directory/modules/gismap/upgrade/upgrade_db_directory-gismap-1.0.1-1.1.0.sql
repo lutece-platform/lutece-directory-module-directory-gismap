@@ -8,6 +8,25 @@
 REPLACE INTO core_portlet_type (id_portlet_type,name,url_creation,url_update,home_class,plugin_name,url_docreate,create_script,create_specific,create_specific_form,url_domodify,modify_script,modify_specific,modify_specific_form) VALUES 
 ('GISMAP_PORTLET','gismap.portlet.name','plugins/directory/modules/gismap/CreatePortletDirectoryGismap.jsp','plugins/directory/modules/gismap/ModifyPortletDirectoryGismap.jsp','fr.paris.lutece.plugins.directory.modules.gismap.business.portlet.GismapDirectoryPortletHome','gismap','plugins/directory/modules/gismap/DoCreatePortletDirectoryGismap.jsp','','/admin/plugins/directory/modules/gismap/list_directory.html','','plugins/directory/modules/gismap/DoModifyPortletDirectoryGismap.jsp','','/admin/plugins/directory/modules/gismap/list_directory.html','');
 
+DROP TABLE IF EXISTS directory_gismap_source;
+CREATE TABLE directory_gismap_source (
+	id_directory_gismap_source INT DEFAULT 0 NOT NULL,
+	id_portlet INT DEFAULT 0 NOT NULL,
+	id_directory int default NULL,
+	id_entry_geolocation int default NULL,
+	geojson_index int default NULL,
+	id_view int default NULL,
+	PRIMARY KEY  (id_directory_gismap_source)
+);
+
+DELETE FROM core_portlet WHERE id_portlet_type = 'GISMAP_PORTLET';
+
+DROP TABLE IF EXISTS gismap_portlet;
+CREATE TABLE gismap_portlet (
+	id_portlet int default NULL,
+	id_view int default 0,
+	PRIMARY KEY  (id_portlet)
+);
 
 -- ------------------------------------------------------------------------------------------------------
 -- WARNING!!!! If You are upgrading from GISMAP version BEFORE 1.1.3 without existing gismap portlet instances,

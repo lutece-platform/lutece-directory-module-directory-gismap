@@ -4,7 +4,22 @@
 DROP TABLE IF EXISTS gismap_portlet;
 CREATE TABLE gismap_portlet (
 	id_portlet int default NULL,
-	id_directory int default NULL
+	id_view int default 0,
+	PRIMARY KEY  (id_portlet)
+);
+
+--
+-- Table structure for table directory_gismap_source
+--
+DROP TABLE IF EXISTS directory_gismap_source;
+CREATE TABLE directory_gismap_source (
+	id_directory_gismap_source INT DEFAULT 0 NOT NULL,
+	id_portlet INT DEFAULT 0 NOT NULL,
+	id_directory int default NULL,
+	id_entry_geolocation int default NULL,
+	geojson_index int default NULL,
+	id_view int default NULL,
+	PRIMARY KEY  (id_directory_gismap_source)
 );
 
 
