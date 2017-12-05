@@ -51,6 +51,7 @@ import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 
 import net.sf.json.JSONArray;
+import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 
 import java.util.ArrayList;
@@ -411,26 +412,34 @@ public class RecordsResource
 	private static String getGeometry(boolean bRMMSHOWCENTROIDProperty, String strRecordFieldGeometry, String strRecordFieldX, String strRecordFieldY) {
 		
 		String strGeometry = null;
-        if ( bRMMSHOWCENTROIDProperty )
-        {
-            JSONObject jsonCoordinates = new JSONObject(  );
-            if ( !strRecordFieldX.isEmpty(  ) && !strRecordFieldY.isEmpty(  ) )
-            {
-                jsonCoordinates.accumulate( "type", "Point" );
-                jsonCoordinates.accumulate( "coordinates", "[" + strRecordFieldX + "," + strRecordFieldY + "]" );
-            }
-        	
-            strGeometry = jsonCoordinates.toString(  ) ;
-        }
-        else
-        {
-        	JSONObject jsonGeometry = JSONObject.fromObject( strRecordFieldGeometry );
-        	if (jsonGeometry.containsKey(KEY_GEOMETRY))
-        	{
-        		strGeometry = jsonGeometry.get(KEY_GEOMETRY).toString( );
-        	}
+    	try {
+	        if ( bRMMSHOWCENTROIDProperty )
+	        {
+	            JSONObject jsonCoordinates = new JSONObject(  );
+	            if ( !strRecordFieldX.isEmpty(  ) && !strRecordFieldY.isEmpty(  ) )
+	            {
+	                jsonCoordinates.accumulate( "type", "Point" );
+	                jsonCoordinates.accumulate( "coordinates", "[" + strRecordFieldX + "," + strRecordFieldY + "]" );
+	            }
+	        	
+	            strGeometry = jsonCoordinates.toString(  ) ;
+	        }
+	        else
+	        {
+	
+	        	JSONObject jsonGeometry = JSONObject.fromObject( strRecordFieldGeometry );
+	        	if (jsonGeometry.containsKey(KEY_GEOMETRY))
+	        	{
+	        		strGeometry = jsonGeometry.get(KEY_GEOMETRY).toString( );
+	        	}
+	
+	        }
+    	}
+    	catch ( JSONException e)
+    	{
+    		AppLogService.error("Could not parse the json Geometry for feature "+strRecordFieldGeometry, e);
+    	}
 
-        }
 		return strGeometry;
 	}
 
