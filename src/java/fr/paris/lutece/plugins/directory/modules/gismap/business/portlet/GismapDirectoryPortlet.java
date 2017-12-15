@@ -87,8 +87,7 @@ public class GismapDirectoryPortlet extends Portlet
     	GismapDirectoryPortlet portlet = ( GismapDirectoryPortlet ) PortletHome.findByPrimaryKey( getId( ) );
     	List<DirectoryGismapSourceQuery> listGeojsonSources = portlet.getListMapSource( );
 
-    	// TO DO : configure the view from the portlet admin
-    	String viewId = AppPropertiesService.getProperty( GISMAP_DEFAULT_VIEW_PROPERTIES );
+    	String viewId = String.valueOf( portlet.getView( ) );
 
     	StringBuffer strXml = new StringBuffer( );
     	XmlUtil.beginElement( strXml, TAG_GISMAP_PORTLET );
