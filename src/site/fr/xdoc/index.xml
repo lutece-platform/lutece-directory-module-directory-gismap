@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document>
+    <properties>
+        <title>Plugin gismap</title>
+    </properties>
+    <body>
+        <section name="Plugin Gismap">
+            <subsection name="Introduction">
+               <p>
+			Le plugin GISMAP est un plugin LUTECE pour implémenter la représentation cartographique des données. Il a été réalisé en s’appuyant sur l'API cartographique OpenLayers (http://openlayers.org/)
+			La version actuelle permet d’intégrer un affichage cartographique de manière autonome ou couplé aux plugins FORM et DIRECTORY de LUTECE. <br />
+			Ci-dessous la liste des principales fonctionnalités : <br />
+			</p>
+			<ul>
+				<li>Navigation cartographique</li>
+				<li>Affichage de données cartographiques diverses
+					<ul>
+						<li>Divers formats:  WMTS, WMS, WFS, GeoJson</li>
+						<li>Divers serveurs cartographique:   GeoServer, ArcGis Server d'ESRI</li>
+						<li>Divers fournisseurs de données cartographiques:  CapGeo (Infra Marie de Paris), OpenStreetMaps, ... </li>
+					</ul>
+				</li>
+				<li>Saisie d'une information de type GEOLOCALISATION</li>
+				<li>Différents outils cartographiques standards:
+					<ul>
+						<li> GPS, Plein écran, Echelle, Popup, Fenêtre de positionnement, Affichage des coordonnées du curseur de la souris, Outils de dessin, Outils de mesure, Zoom sur un lieu,...</li>
+					</ul>	
+				 </li>
+			</ul>
+			<p>
+			Pour un couplage de gismap avec le plugin FORM, utiliser le module-genericattributes-gismap.
+			Pour un couplage de gismap avec le plugin DIRECTORY, utiliser le module-directory-gismap.
+			Dans les deux cas, cela permet d'associer Gismap comme fournisseur de carte pour les données de type GEOLOCALISATION.
+			</p>
+			<p>
+			Nouveautés de la version 2.0.0:
+			</p>
+			<ul>
+				<li>Montée de palier technique
+					<ul>
+						<li>OpenLayers v4.6.2</li>
+						<li>Consommation des WS Adresse et amélioration du géocodage inverse</li>
+					</ul>
+				</li>
+				<li>Correction d’anomalies identifiées
+					<ul>
+						<li>WS directory-gismap</li>
+						<li>Ordre des infos dans la Popup cohérent avec l’ordre du paramétrage</li>
+						<li>Fonction FilterLayerGeoJson() qui prend en compte la projection</li>
+						<li>Divers message d’erreur dans la console</li>
+						<li>Suppression de fichier obsolète ou source de données obsolète</li>
+						<li>Librairie OL Non Debug</li>
+					</ul>
+				</li>
+				<li>Fonctionnel
+					<ul>
+						<li>Sélection graphique via dessin</li>
+						<li>Interaction avec la souris (pouvoir désactiver certaines actions via paramétrage)</li>
+						<li>Résolution CapGeo(en cours)</li>
+						<li>Bloquer l’emprise par paramétrage</li>
+						<li>Bloquer le niveau de Zoom par paramétrage</li>
+						<li>Pouvoir consommer plusieurs sources GeoJson</li>
+						<li>Intégration de vues immersives</li>
+						<li>Modification du curseur au survol si POPUP</li>
+					</ul>
+				</li>
+			</ul>
+            </subsection>
+            <subsection name="Configuration">
+             <p>
+                Le fichier gismap.properties rassemble la configuration globale du plugin et les paramètres de vue. Les différentes vues permettent de définir des cartes avec des outils, sources et styles spécifiques pour des applications différentes : cartes générales, cartes de gestion, carte attributaires avec edition ou en lecture seule.
+             </p>
+            </subsection>
+            <subsection name="Usage">
+             <p>
+                Page Front-office pour afficher une carte par défaut en mode autonome : <em>/jsp/site/RunStandaloneApp.jsp?page=gismap</em>
+             </p>
+             <p>
+                Page d'administration back-office pour afficher une carte par défaut en mode autonome : <em>/jsp/admin/plugins/gismap/ManageGismap.jsp?plugin_name=gismap</em>
+             </p>
+            </subsection>
+            <subsection name="Documentation">
+              <p>
+                Pour plus d'information concernant les fonctionalités, le develeoppement et l'integration de Gismap dans un site Lutece, consulter le wiki :
+                <a href="http://fr.lutece.paris.fr/fr/wiki/home.html"> documentation Gismap</a>
+             </p>
+            </subsection>
+        </section>
+    </body>
+</document>  

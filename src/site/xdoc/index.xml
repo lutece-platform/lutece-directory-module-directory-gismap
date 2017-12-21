@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document>
+    <properties>
+        <title>Module Directory-gismap</title>
+    </properties>
+    <body>
+        <section name="Module Directory-gismap">
+<p>This module implements a map provider for the plugin directory, to enable creation and modification of Geolocation type entries in directories. The plugin-gismap is used to display and edit geolocation data on a map.</p>
+<p>A portlet type is also provided to display a Map in a Lutece page, using directories as data sources. A map portlet can handle several Geojson layers displaying data from different directories.</p>
+        </section>
+    </body>
+</document>  
