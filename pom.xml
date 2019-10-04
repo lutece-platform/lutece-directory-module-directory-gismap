@@ -56,7 +56,7 @@
     <scm>
         <connection>scm:git:https://github.com/lutece-platform/lutece-directory-module-directory-gismap.git</connection>
         <developerConnection>scm:git:https://github.com/lutece-platform/lutece-directory-module-directory-gismap.git</developerConnection>
-        <url>https://https://github.com/lutece-platform/lutece-directory-module-directory-gismap.git</url>
+        <url>https://github.com/lutece-platform/lutece-directory-module-directory-gismap.git</url>
       <tag>HEAD</tag>
   </scm>
     
