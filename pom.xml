@@ -30,19 +30,19 @@
  		<dependency>
 			<groupId>fr.paris.lutece.plugins</groupId>
 			<artifactId>plugin-directory</artifactId>
-			<version>[4.0.10,)</version>
+			<version>[4.0.10,4.9.9)</version>
 			<type>lutece-plugin</type>
 		</dependency>
         <dependency>
             <groupId>fr.paris.lutece.plugins</groupId>
             <artifactId>plugin-gismap</artifactId>
-            <version>[2.0.0,)</version> 
+            <version>[2.0.0,2.9.9)</version> 
             <type>lutece-plugin</type>
         </dependency>
         <dependency>
             <groupId>fr.paris.lutece.plugins</groupId>
             <artifactId>plugin-rest</artifactId>
-            <version>[1.0.0,)</version>
+            <version>[1.0.0,3.9.9)</version>
             <type>lutece-plugin</type>
         </dependency>     
 	</dependencies>
